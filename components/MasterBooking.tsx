@@ -206,35 +206,48 @@ export default function MasterBooking({ index }: { index: number }) {
       <div>
         <h3 className="text-[11px] uppercase tracking-[0.28em] text-accent">{b.when}</h3>
 
+        {/* Availability is not drawn until the browser has told us the time.
+            These pages are prerendered, so a strip rendered on the server
+            carries the clock of the build machine, and until hydration catches
+            up it can offer an hour that passed hours ago. */}
         <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto pb-1">
-          {days.map((d, i) => {
-            const shut = isClosed(d);
-            const free = slotsFor(d, index).some((s) => s.free);
-            const on = i === dayIndex;
-            return (
-              <button
-                key={ymd(d)}
-                type="button"
-                disabled={shut || !free}
-                onClick={() => {
-                  setDayIndex(i);
-                  setDayPicked(true);
-                }}
-                className={`shrink-0 border px-4 py-3 text-center transition ${
-                  on
-                    ? "border-accent text-accent"
-                    : shut || !free
-                      ? "border-line/50 text-muted/30"
-                      : "border-line text-muted hover:border-accent hover:text-bone"
-                }`}
-              >
-                <span className="block text-[10px] uppercase tracking-[0.18em]">
-                  {dayLabel(d, i)}
-                </span>
-                <span className="display mt-1 block text-xl">{d.getDate()}</span>
-              </button>
-            );
-          })}
+          {!mounted &&
+            Array.from({ length: 7 }, (_, i) => (
+              <span
+                key={i}
+                aria-hidden
+                className="h-[4.25rem] w-[4.5rem] shrink-0 animate-pulse border border-line/50 bg-ink-2"
+              />
+            ))}
+          {mounted &&
+            days.map((d, i) => {
+              const shut = isClosed(d);
+              const free = slotsFor(d, index).some((s) => s.free);
+              const on = i === dayIndex;
+              return (
+                <button
+                  key={ymd(d)}
+                  type="button"
+                  disabled={shut || !free}
+                  onClick={() => {
+                    setDayIndex(i);
+                    setDayPicked(true);
+                  }}
+                  className={`shrink-0 border px-4 py-3 text-center transition ${
+                    on
+                      ? "border-accent text-accent"
+                      : shut || !free
+                        ? "border-line/50 text-muted/30"
+                        : "border-line text-muted hover:border-accent hover:text-bone"
+                  }`}
+                >
+                  <span className="block text-[10px] uppercase tracking-[0.18em]">
+                    {dayLabel(d, i)}
+                  </span>
+                  <span className="display mt-1 block text-xl">{d.getDate()}</span>
+                </button>
+              );
+            })}
         </div>
 
         <div className="mt-6 min-h-[5.5rem]">
