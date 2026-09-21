@@ -10,6 +10,10 @@ export const SALON = {
   reviewCount: 186,
   founded: 2019,
   mapsQuery: "ул. Шишман 18, София",
+  /** ул. „Цар Иван Шишман“ 18, София — geocoded with Nominatim. */
+  lat: 42.69187,
+  lon: 23.33023,
+  bbox: "23.32523,42.68987,23.33523,42.69387",
 } as const;
 
 export const BGN_RATE = 1.95583;
@@ -139,16 +143,27 @@ const bg = {
       },
       {
         title: "Нокти",
-        blurb: "Маникюр с гел лак и с изграждане, в отделно помещение от сешоарите.",
+        blurb: "Маникюр и педикюр в отделно помещение от сешоарите — без шум и без лак във въздуха на салона.",
         prices: [
+          { title: "Класически маникюр", note: "оформяне и полиране, без лак" },
           { title: "Маникюр с гел лак", note: "с оформяне на плочката" },
           { title: "Маникюр с изграждане", note: "гел или акрил" },
+          { title: "Изграждане с типсове", note: "за къса или начупена плочка" },
+          { title: "Педикюр с гел лак", note: "с оформяне и обработка" },
+          { title: "Сваляне на гел лак", note: "без нова процедура" },
         ],
       },
       {
         title: "Лице",
-        blurb: "Апаратни процедури за кожата, по програма след консултация.",
-        prices: [{ title: "Микронидлинг", note: "по програма след консултация" }],
+        blurb: "Козметика и апаратни процедури, по програма след консултация. Първият път започва с преглед на кожата.",
+        prices: [
+          { title: "Почистване на лице", note: "ръчно, с подготовка и успокояване" },
+          { title: "Масаж на лице", note: "по желание, след процедура" },
+          { title: "Дълбока хидратация", note: "със серум и маска" },
+          { title: "RF лифтинг", note: "апаратна процедура, на курс" },
+          { title: "Микронидлинг", note: "по програма след консултация" },
+          { title: "Ламиниране на вежди", note: "с оформяне и боядисване" },
+        ],
       },
     ],
   },
@@ -400,6 +415,7 @@ const bg = {
     email: "Имейл",
     address: "Адрес",
     map: "Карта",
+    openMap: "Отворете в OpenStreetMap →",
     closed: "почивен ден",
     note: "Входът е на улично ниво. Пред салона има зона за платено паркиране.",
     hours: [
@@ -530,16 +546,27 @@ const en: typeof bg = {
       },
       {
         title: "Nails",
-        blurb: "Gel polish and extensions, in a room of their own away from the dryers.",
+        blurb: "Manicure and pedicure in a room of their own, away from the dryers — no noise, no varnish in the salon air.",
         prices: [
+          { title: "Classic manicure", note: "shaped and buffed, no colour" },
           { title: "Gel polish manicure", note: "with nail shaping" },
           { title: "Manicure with extensions", note: "gel or acrylic" },
+          { title: "Tip extensions", note: "for short or broken nails" },
+          { title: "Gel polish pedicure", note: "shaping and footwork included" },
+          { title: "Gel polish removal", note: "on its own, no new set" },
         ],
       },
       {
         title: "Skin",
-        blurb: "Device treatments for the skin, on a plan agreed after a consultation.",
-        prices: [{ title: "Microneedling", note: "on a plan, after a consultation" }],
+        blurb: "Facials and device-led treatments, on a plan after a consultation. The first visit starts by looking at the skin.",
+        prices: [
+          { title: "Facial cleanse", note: "by hand, with prep and calming" },
+          { title: "Facial massage", note: "optional, after a treatment" },
+          { title: "Deep hydration", note: "serum and mask" },
+          { title: "RF lifting", note: "device-led, taken as a course" },
+          { title: "Microneedling", note: "on a plan, after a consultation" },
+          { title: "Brow lamination", note: "shaped and tinted" },
+        ],
       },
     ],
   },
@@ -791,6 +818,7 @@ const en: typeof bg = {
     email: "Email",
     address: "Address",
     map: "Map",
+    openMap: "Open in OpenStreetMap →",
     closed: "closed",
     note: "The entrance is at street level. There is paid street parking in front of the salon.",
     hours: [

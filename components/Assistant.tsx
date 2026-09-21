@@ -65,7 +65,7 @@ export default function Assistant() {
     <>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-24 right-4 z-[55] flex items-center gap-2.5 rounded-full border border-line bg-ink-2 p-3 text-[14px] font-light text-bone shadow-lift transition-all duration-300 hover:border-accent md:bottom-6 md:py-3.5 md:pl-4 md:pr-5 ${
+        className={`group fixed bottom-24 right-4 z-[55] flex items-center gap-0 rounded-full border border-line bg-ink-2 p-3 text-[14px] font-light text-bone shadow-lift transition-all duration-300 hover:gap-2.5 hover:border-accent focus-visible:gap-2.5 md:bottom-6 ${
           open ? "pointer-events-none scale-90 opacity-0" : "scale-100 opacity-100"
         }`}
         aria-label={t.assistant.open}
@@ -74,7 +74,12 @@ export default function Assistant() {
           <LogoMark className="size-5" />
           <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-accent ring-2 ring-ink-2 dot-live" />
         </span>
-        <span className="hidden md:inline">{t.assistant.open}</span>
+        {/* Closed, this stays a circle that fits the page gutter — a wide pill
+            parked here lands on whatever control happens to be in the corner.
+            The word appears when the visitor reaches for it. */}
+        <span className="hidden max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-[10rem] group-hover:pr-1.5 group-focus-visible:max-w-[10rem] group-focus-visible:pr-1.5 md:inline">
+          {t.assistant.open}
+        </span>
       </button>
 
       <div

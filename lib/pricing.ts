@@ -51,15 +51,24 @@ export const DIRECTIONS: DirectionMeta[] = [
     slug: "nokti",
     icon: "nail",
     items: [
+      { slug: "klasicheski", from: 10, duration: 40 }, // O 20 лв. = 10,23 €
       { slug: "gel", from: 20, duration: 60 }, // O 40 лв. = 20,45 €
       { slug: "izgrazhdane", from: 26, duration: 90 }, // O 50 лв. = 25,57 €
+      { slug: "tipsove", from: 41, duration: 120 }, // O 80 лв. = 40,90 €
+      { slug: "pedikyur", from: 20, duration: 60 }, // O 40 лв. = 20,45 €
+      { slug: "svalyane", from: 8, duration: 20 }, // O 15 лв. = 7,67 €
     ],
   },
   {
     slug: "litse",
     icon: "face",
     items: [
+      { slug: "pochistvane", from: 36, duration: 60 }, // O 70 лв. = 35,79 €
+      { slug: "masaj", from: 15, duration: 30 }, // O 30 лв. = 15,34 €
+      { slug: "hidratatsia", from: 51, duration: 60 }, // O 100 лв. = 51,13 €
+      { slug: "rf", from: 61, duration: 60 }, // O 120 лв. = 61,35 €
       { slug: "mikroniidling", from: 77, duration: 60 }, // O 150 лв. = 76,69 €
+      { slug: "vezhdi", from: 36, duration: 45 }, // O 70 лв. = 35,79 €
     ],
   },
 ];

@@ -37,7 +37,10 @@ export default function Gallery() {
                 alt={g.caption}
                 sizes="(max-width: 640px) 50vw, 33vw"
                 label={g.caption}
-                className="object-cover transition duration-700 group-hover:scale-105"
+                // Greyscale like the portraits, for the same reason: the work
+                // comes from a dozen different cameras and lighting setups, and
+                // left in colour the wall reads as stock, not as one salon.
+                className="object-cover grayscale transition duration-700 group-hover:scale-105 group-hover:grayscale-0"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-transparent to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
               <figcaption className="absolute inset-x-0 bottom-0 translate-y-3 p-5 text-[12px] uppercase tracking-[0.18em] text-bone opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100">

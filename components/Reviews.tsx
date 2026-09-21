@@ -5,7 +5,7 @@ import { useI18n } from "./I18n";
 import { SALON } from "@/lib/content";
 
 export default function Reviews() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <section id="otzivi" className="border-b border-line bg-ink-2 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6">
@@ -19,7 +19,11 @@ export default function Reviews() {
             </h2>
 
             <div className="mt-10 flex items-center gap-5 border-y border-line py-6">
-              <div className="display text-6xl text-bone">{SALON.rating}</div>
+              <div className="display text-6xl text-bone">
+                {SALON.rating.toLocaleString(lang === "bg" ? "bg-BG" : "en-GB", {
+                  minimumFractionDigits: 1,
+                })}
+              </div>
               <div>
                 <div className="flex gap-1 text-accent">
                   {Array.from({ length: 5 }).map((_, i) => (

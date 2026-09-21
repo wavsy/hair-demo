@@ -81,15 +81,24 @@ export default function Contact() {
           </div>
 
           <div className="reveal overflow-hidden border border-line bg-ink">
+            {/* OpenStreetMap rather than the Google embed: it needs no key and
+                no cookie consent, so the map is actually on screen in Bulgaria
+                instead of a blocked frame behind a banner. */}
             <iframe
               title={t.contact.map}
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(SALON.mapsQuery)}&z=16&hl=${
-                t.lang
-              }&output=embed`}
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${SALON.bbox}&layer=mapnik&marker=${SALON.lat},${SALON.lon}`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="h-full min-h-[28rem] w-full border-0 opacity-80 grayscale invert-[0.92] hue-rotate-180"
             />
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${SALON.lat}&mlon=${SALON.lon}#map=17/${SALON.lat}/${SALON.lon}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block border-t border-line px-5 py-4 text-[13px] font-light text-muted transition hover:text-accent"
+            >
+              {t.contact.openMap}
+            </a>
           </div>
         </div>
       </div>

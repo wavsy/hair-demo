@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "./I18n";
 
 type Props = {
   to: number;
@@ -10,6 +11,9 @@ type Props = {
 };
 
 export default function Counter({ to, decimals = 0, suffix = "", className }: Props) {
+  // The decimal mark follows the page, not the salon: "4,9" in Bulgarian,
+  // "4.9" in English. One locale for both prints a comma to an English reader.
+  const { lang } = useI18n();
   const ref = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(to);
   const started = useRef(false);
@@ -45,7 +49,7 @@ export default function Counter({ to, decimals = 0, suffix = "", className }: Pr
 
   return (
     <span ref={ref} className={className}>
-      {value.toLocaleString("bg-BG", {
+      {value.toLocaleString(lang === "bg" ? "bg-BG" : "en-GB", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}
