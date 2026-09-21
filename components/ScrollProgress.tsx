@@ -25,7 +25,7 @@ export default function ScrollProgress() {
   return (
     <div className="fixed inset-x-0 top-0 z-[70] h-[3px] bg-transparent">
       <div
-        className="h-full origin-left bg-gradient-to-r from-brand-light via-brand to-accent transition-transform duration-150"
+        className="h-full origin-left bg-gradient-to-r from-accent-dim via-accent to-accent-soft transition-transform duration-150"
         style={{ transform: `scaleX(${p})` }}
       />
     </div>

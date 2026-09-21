@@ -6,67 +6,45 @@ type Props = {
   sub?: string;
 };
 
-/** Paw whose central pad is a heart, cut by a pulse line — vet + care in one mark. */
-export function LogoMark({ className = "size-10" }: { className?: string }) {
+/** Three waves — "ondé" is French for wavy, and the mark says it without a word. */
+export function LogoMark({ className = "size-9" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="lapa-mark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="currentColor" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity=".78" />
-        </linearGradient>
-      </defs>
-      <g fill="url(#lapa-mark)">
-        <ellipse cx="13.6" cy="17.4" rx="4.1" ry="5.4" transform="rotate(-16 13.6 17.4)" />
-        <ellipse cx="24" cy="13.2" rx="4.2" ry="5.8" />
-        <ellipse cx="34.4" cy="17.4" rx="4.1" ry="5.4" transform="rotate(16 34.4 17.4)" />
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true" fill="none">
+      <g stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+        <path d="M4 10c2.6-3.2 5.2-3.2 7.8 0s5.2 3.2 7.8 0 5.2-3.2 7.8 0" opacity=".55" />
+        <path d="M4 16c2.6-3.2 5.2-3.2 7.8 0s5.2 3.2 7.8 0 5.2-3.2 7.8 0" />
+        <path d="M4 22c2.6-3.2 5.2-3.2 7.8 0s5.2 3.2 7.8 0 5.2-3.2 7.8 0" opacity=".55" />
       </g>
-      <path
-        fill="url(#lapa-mark)"
-        d="M24 24.4c-5.9 0-10.7 4.3-10.7 9.3 0 3.7 2.8 6.2 7.1 6.2h7.2c4.3 0 7.1-2.5 7.1-6.2 0-5-4.8-9.3-10.7-9.3Z"
-      />
-      <path
-        d="M14.6 33.2h4.3l2-4.1 2.8 8 2.5-5.3 1.5 2.2h5.7"
-        fill="none"
-        stroke="var(--logo-pulse, #faf6f0)"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
     </svg>
   );
 }
 
 export default function Logo({
   className = "",
-  tone = "dark",
+  tone = "light",
   compact = false,
-  name = "Лапа",
-  sub = "Ветеринарна клиника",
+  name = "ONDÉ",
+  sub = "Салон за красота",
 }: Props) {
   const light = tone === "light";
   return (
-    <span className={`flex items-center gap-2.5 ${className}`}>
-      <span
-        className={`grid size-11 shrink-0 place-items-center rounded-[0.95rem] transition ${
-          light ? "bg-white/10 text-white ring-1 ring-white/20" : "bg-brand text-white"
-        }`}
-        style={{ ["--logo-pulse" as string]: light ? "#0c2b26" : "#faf6f0" }}
-      >
-        <LogoMark className="size-7" />
+    <span className={`flex items-center gap-3 ${className}`}>
+      <span className={`shrink-0 ${light ? "text-accent" : "text-accent"}`}>
+        <LogoMark className="size-8" />
       </span>
       {!compact && (
         <span className="leading-none">
           <span
-            className={`block text-[1.35rem] font-extrabold tracking-[-0.03em] ${
-              light ? "text-white" : "text-ink"
+            className={`block text-[1.5rem] font-light tracking-[0.18em] ${
+              light ? "text-bone" : "text-ink"
             }`}
+            style={{ fontFamily: "var(--font-display)" }}
           >
             {name}
           </span>
           <span
-            className={`mt-1 block text-[10px] font-semibold uppercase tracking-[0.22em] ${
-              light ? "text-white/50" : "text-ink-soft"
+            className={`mt-1.5 block text-[9px] font-medium uppercase tracking-[0.26em] ${
+              light ? "text-muted" : "text-ink/55"
             }`}
           >
             {sub}

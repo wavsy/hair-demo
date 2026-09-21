@@ -1,44 +1,56 @@
 type IconProps = { name: string; className?: string };
 
 const P: Record<string, React.ReactNode> = {
-  stethoscope: (
+  scissors: (
     <>
-      <path d="M6 3v5a4 4 0 0 0 8 0V3" />
-      <path d="M4 3h3M13 3h3" />
-      <path d="M10 12v3a5 5 0 0 0 10 0v-1" />
-      <circle cx="20" cy="11" r="2" />
+      <circle cx="6" cy="6" r="2.6" />
+      <circle cx="6" cy="18" r="2.6" />
+      <path d="M8.3 7.6 20 18M8.3 16.4 20 6" />
     </>
   ),
-  syringe: (
+  drop: (
     <>
-      <path d="m14 4 6 6" />
-      <path d="m17.5 6.5 2.5-2.5" />
-      <path d="M13 5 5.5 12.5a2 2 0 0 0 0 2.8l2.2 2.2a2 2 0 0 0 2.8 0L18 10" />
-      <path d="m7 15-3 3v2h2l3-3" />
-      <path d="m11 9 1.5 1.5M14 6l1.5 1.5" />
+      <path d="M12 3.5c3.6 4.2 6 7.2 6 10a6 6 0 0 1-12 0c0-2.8 2.4-5.8 6-10Z" />
+      <path d="M9.4 13.8a2.8 2.8 0 0 0 2.6 3.4" />
     </>
   ),
-  tooth: (
+  nail: (
     <>
-      <path d="M12 6c-1.5-1.3-3-2-4.6-2C5 4 3.5 6 3.5 8.6c0 2 .7 3.4 1.3 5.6.5 1.9.5 5.8 2.2 5.8 1.5 0 1.6-3.4 2.6-5.3.5-1 1-1.4 2.4-1.4s1.9.4 2.4 1.4c1 1.9 1.1 5.3 2.6 5.3 1.7 0 1.7-3.9 2.2-5.8.6-2.2 1.3-3.6 1.3-5.6C20.5 6 19 4 16.6 4 15 4 13.5 4.7 12 6Z" />
+      <path d="M8.4 9.3C8.4 5.8 9.8 3 12 3s3.6 2.8 3.6 6.3v7.4c0 2.4-1.5 4.3-3.6 4.3s-3.6-1.9-3.6-4.3V9.3Z" />
+      <path d="M8.6 12.6h6.8" />
     </>
   ),
-  scan: (
+  face: (
     <>
-      <path d="M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3" />
-      <path d="M7 12h2l1.5-3 2 6 1.5-3h3" />
+      <path d="M5 11a7 7 0 0 1 14 0v1.5a7 7 0 0 1-7 7 7 7 0 0 1-7-7V11Z" />
+      <path d="M9.4 11v1.2M14.6 11v1.2" />
+      <path d="M10.3 15.4a2.6 2.6 0 0 0 3.4 0" />
+      <path d="M4.6 8.6C6.5 5.4 9 3.8 12 3.8s5.5 1.6 7.4 4.8" />
     </>
   ),
-  flask: (
+  user: (
     <>
-      <path d="M9 3h6M10 3v6.5L5.3 17a2 2 0 0 0 1.7 3h10a2 2 0 0 0 1.7-3L14 9.5V3" />
-      <path d="M7.5 14h9" />
+      <circle cx="12" cy="8.5" r="3.8" />
+      <path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0" />
     </>
   ),
-  scalpel: (
+  tag: (
     <>
-      <path d="M4 20 14 10l6-6 0 4-9 9-7 3Z" />
-      <path d="m9.5 14.5 2 2" />
+      <path d="M3 12.5V4a1 1 0 0 1 1-1h8.5a1 1 0 0 1 .7.3l7.5 7.5a1 1 0 0 1 0 1.4l-8.5 8.5a1 1 0 0 1-1.4 0L3.3 13.2a1 1 0 0 1-.3-.7Z" />
+      <circle cx="8" cy="8" r="1.6" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+    </>
+  ),
+  cap: (
+    <>
+      <path d="m12 4 9 4.5-9 4.5-9-4.5L12 4Z" />
+      <path d="M6.8 10.8V16c0 1.4 2.3 2.6 5.2 2.6s5.2-1.2 5.2-2.6v-5.2" />
+      <path d="M21 8.5V14" />
     </>
   ),
   clock: (
@@ -52,23 +64,7 @@ const P: Record<string, React.ReactNode> = {
       <path d="M7 3h3l2 5-2.5 1.5a11 11 0 0 0 5 5L16 12l5 2v3a2 2 0 0 1-2.2 2C10.6 18.4 5.6 13.4 5 5.2A2 2 0 0 1 7 3Z" />
     </>
   ),
-  bell: (
-    <>
-      <path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" />
-      <path d="M10.5 19a2 2 0 0 0 3 0" />
-    </>
-  ),
-  tag: (
-    <>
-      <path d="M3 12.5V4a1 1 0 0 1 1-1h8.5a1 1 0 0 1 .7.3l7.5 7.5a1 1 0 0 1 0 1.4l-8.5 8.5a1 1 0 0 1-1.4 0L3.3 13.2a1 1 0 0 1-.3-.7Z" />
-      <circle cx="8" cy="8" r="1.6" />
-    </>
-  ),
-  star: (
-    <>
-      <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.2-5.4-2.9-5.4 2.9 1-6.2L3.2 9.5l6.1-.9L12 3Z" />
-    </>
-  ),
+  star: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.2-5.4-2.9-5.4 2.9 1-6.2L3.2 9.5l6.1-.9L12 3Z" />,
   check: <path d="m4.5 12.5 5 5 10-11" />,
   arrow: (
     <>
@@ -88,20 +84,6 @@ const P: Record<string, React.ReactNode> = {
       <path d="m3.5 7 8.5 6 8.5-6" />
     </>
   ),
-  paw: (
-    <>
-      <ellipse cx="7" cy="9" rx="2" ry="2.6" />
-      <ellipse cx="12" cy="7" rx="2" ry="2.8" />
-      <ellipse cx="17" cy="9" rx="2" ry="2.6" />
-      <path d="M12 12c-2.8 0-5 2-5 4.3C7 18.4 8.6 20 11 20h2c2.4 0 4-1.6 4-3.7 0-2.3-2.2-4.3-5-4.3Z" />
-    </>
-  ),
-  shield: (
-    <>
-      <path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6l-7-3Z" />
-      <path d="m9 12 2 2 4-4" />
-    </>
-  ),
   chevron: <path d="m6 9 6 6 6-6" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,
@@ -111,23 +93,11 @@ const P: Record<string, React.ReactNode> = {
       <path d="M3 10h18M8 3v4M16 3v4" />
     </>
   ),
-  alert: (
+  wave: <path d="M3 12c2.2-3 4.5-3 6.7 0s4.5 3 6.7 0 4.5-3 6.6 0" />,
+  sparkle: (
     <>
-      <path d="M12 4 2.8 20h18.4L12 4Z" />
-      <path d="M12 10v4.5M12 17.4v.2" />
-    </>
-  ),
-  cart: (
-    <>
-      <path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.5L20 8H6" />
-      <circle cx="10" cy="20" r="1.4" />
-      <circle cx="17" cy="20" r="1.4" />
-    </>
-  ),
-  chip: (
-    <>
-      <rect x="7" y="7" width="10" height="10" rx="2.5" />
-      <path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4" />
+      <path d="M12 3.5 13.6 9l5.5 1.6-5.5 1.6L12 17.7l-1.6-5.5L4.9 10.6 10.4 9 12 3.5Z" />
+      <path d="M18.5 16.5 19.2 19l2.5.7-2.5.7-.7 2.5-.7-2.5-2.5-.7 2.5-.7.7-2.5Z" />
     </>
   ),
 };
@@ -138,13 +108,13 @@ export default function Icon({ name, className = "size-6" }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.6"
+      strokeWidth="1.3"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
       aria-hidden="true"
     >
-      {P[name] ?? P.paw}
+      {P[name] ?? P.wave}
     </svg>
   );
 }

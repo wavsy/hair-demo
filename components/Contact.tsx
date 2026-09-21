@@ -3,88 +3,92 @@
 import Icon from "./Icon";
 import OpenStatus from "./OpenStatus";
 import { useI18n } from "./I18n";
-import { CLINIC } from "@/lib/content";
+import { SALON } from "@/lib/content";
 
 export default function Contact() {
   const { t } = useI18n();
   return (
-    <section id="kontakti" className="bg-cream py-20 md:py-28">
+    <section id="kontakti" className="bg-ink-2 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6">
         <div className="reveal max-w-2xl">
-          <span className="text-sm font-bold uppercase tracking-[0.18em] text-brand-light">
-            {t.contact.eyebrow}
-          </span>
-          <h2 className="reveal wipe mt-3 text-4xl font-extrabold tracking-[-0.03em] text-ink sm:text-5xl">
+          <span className="eyebrow">{t.contact.eyebrow}</span>
+          <h2 className="reveal wipe display mt-5 text-4xl text-bone sm:text-5xl">
             {t.contact.title}
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
+        <div className="mt-16 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
           <div className="reveal space-y-4">
-            <div className="rounded-[1.75rem] border border-ink/8 bg-white p-7 shadow-soft">
-              <OpenStatus className="text-brand" />
-              <dl className="mt-5 space-y-3 text-[15px]">
+            <div className="border border-line bg-ink p-7">
+              <OpenStatus className="text-accent" />
+              <dl className="mt-6 space-y-3 text-[14px] font-light">
                 {t.contact.hours.map((h) => (
                   <div key={h.day} className="flex justify-between gap-4">
-                    <dt className="text-ink-soft">{h.day}</dt>
-                    <dd className="font-semibold">
-                      {h.from} – {h.to}
+                    <dt className="text-muted">{h.day}</dt>
+                    <dd className={h.from ? "text-bone" : "text-muted/50"}>
+                      {h.from ? `${h.from} – ${h.to}` : t.contact.closed}
                     </dd>
                   </div>
                 ))}
-                <div className="flex justify-between gap-4 border-t border-ink/8 pt-3">
-                  <dt className="font-semibold text-alarm">{t.contact.emergencyRow}</dt>
-                  <dd className="font-bold text-alarm">{t.contact.allDay}</dd>
-                </div>
               </dl>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <a
-                href={`tel:${CLINIC.phoneHref}`}
-                className="flex items-center gap-4 rounded-[1.5rem] border border-ink/8 bg-white p-5 shadow-soft transition hover:border-brand/30"
+                href={`tel:${SALON.phoneHref}`}
+                className="flex items-center gap-5 border border-line bg-ink p-5 transition hover:border-accent"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-mint text-brand">
-                  <Icon name="phone" className="size-5" />
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                  <Icon name="phone" className="size-4" />
                 </span>
                 <span>
-                  <span className="block text-sm text-ink-soft">{t.contact.reception}</span>
-                  <span className="block font-bold">{CLINIC.phone}</span>
+                  <span className="block text-[11px] uppercase tracking-[0.18em] text-muted/70">
+                    {t.contact.reception}
+                  </span>
+                  <span className="mt-1 block text-[15px] font-light text-bone">{SALON.phone}</span>
                 </span>
               </a>
               <a
-                href={`mailto:${CLINIC.email}`}
-                className="flex items-center gap-4 rounded-[1.5rem] border border-ink/8 bg-white p-5 shadow-soft transition hover:border-brand/30"
+                href={`mailto:${SALON.email}`}
+                className="flex items-center gap-5 border border-line bg-ink p-5 transition hover:border-accent"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-mint text-brand">
-                  <Icon name="mail" className="size-5" />
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                  <Icon name="mail" className="size-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm text-ink-soft">{t.contact.email}</span>
-                  <span className="block truncate font-bold">{CLINIC.email}</span>
+                  <span className="block text-[11px] uppercase tracking-[0.18em] text-muted/70">
+                    {t.contact.email}
+                  </span>
+                  <span className="mt-1 block truncate text-[15px] font-light text-bone">
+                    {SALON.email}
+                  </span>
                 </span>
               </a>
-              <div className="flex items-center gap-4 rounded-[1.5rem] border border-ink/8 bg-white p-5 shadow-soft sm:col-span-2 lg:col-span-1">
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-mint text-brand">
-                  <Icon name="pin" className="size-5" />
+              <div className="flex items-center gap-5 border border-line bg-ink p-5 sm:col-span-2 lg:col-span-1">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                  <Icon name="pin" className="size-4" />
                 </span>
                 <span>
-                  <span className="block text-sm text-ink-soft">{t.contact.address}</span>
-                  <span className="block font-bold">{t.address}</span>
+                  <span className="block text-[11px] uppercase tracking-[0.18em] text-muted/70">
+                    {t.contact.address}
+                  </span>
+                  <span className="mt-1 block text-[15px] font-light text-bone">{t.address}</span>
                 </span>
               </div>
             </div>
+
+            <p className="text-[13px] font-light leading-relaxed text-muted/70">{t.contact.note}</p>
           </div>
 
-          <div className="reveal overflow-hidden rounded-[1.75rem] border border-ink/8 bg-white shadow-soft">
+          <div className="reveal overflow-hidden border border-line bg-ink">
             <iframe
               title={t.contact.map}
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(CLINIC.mapsQuery)}&z=16&hl=${
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(SALON.mapsQuery)}&z=16&hl=${
                 t.lang
               }&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="h-full min-h-[26rem] w-full border-0 grayscale-[35%]"
+              className="h-full min-h-[28rem] w-full border-0 opacity-80 grayscale invert-[0.92] hue-rotate-180"
             />
           </div>
         </div>

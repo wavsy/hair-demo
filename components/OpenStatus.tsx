@@ -30,13 +30,31 @@ export default function OpenStatus({ className = "" }: { className?: string }) {
       const { dayIndex, minutes } = sofiaNow();
       if (dayIndex < 0) return;
       const today = t.contact.hours[dayIndex];
-      if (minutes >= toMin(today.from) && minutes < toMin(today.to)) {
+      // A day with no hours is a closed day — Sunday, here.
+      const nextOpenDay = () => {
+        for (let step = 1; step <= 7; step++) {
+          const day = t.contact.hours[(dayIndex + step) % 7];
+          if (day.from) return { day, step };
+        }
+        return null;
+      };
+
+      if (!today.from) {
+        const next = nextOpenDay();
+        setState({
+          open: false,
+          text: next && next.step === 1 ? t.status.opensTomorrow(next.day.from) : t.status.closedToday,
+        });
+      } else if (minutes >= toMin(today.from) && minutes < toMin(today.to)) {
         setState({ open: true, text: t.status.openUntil(today.to) });
       } else if (minutes < toMin(today.from)) {
         setState({ open: false, text: t.status.opensAt(today.from) });
       } else {
-        const next = t.contact.hours[(dayIndex + 1) % 7];
-        setState({ open: false, text: t.status.opensTomorrow(next.from) });
+        const next = nextOpenDay();
+        setState({
+          open: false,
+          text: next && next.step === 1 ? t.status.opensTomorrow(next.day.from) : t.status.closedToday,
+        });
       }
     };
     compute();
@@ -46,12 +64,12 @@ export default function OpenStatus({ className = "" }: { className?: string }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 text-sm font-medium ${className}`}
+      className={`inline-flex items-center gap-2.5 text-[13px] font-light ${className}`}
       suppressHydrationWarning
     >
       <span
-        className={`size-2 rounded-full dot-live ${
-          state === null ? "bg-current opacity-40" : state.open ? "bg-emerald-400" : "bg-accent"
+        className={`size-1.5 rounded-full dot-live ${
+          state === null ? "bg-current opacity-40" : state.open ? "bg-accent" : "bg-muted"
         }`}
       />
       {state === null ? t.status.label : state.text}

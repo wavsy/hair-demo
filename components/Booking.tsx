@@ -2,16 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Icon from "./Icon";
+import Photo from "./Photo";
 import { useI18n } from "./I18n";
-import { CLINIC, SERVICE_META, priceLabel } from "@/lib/content";
-import { slotsFor, ymd } from "@/lib/slots";
+import { MASTER_META, SALON, priceLabel, rangeLabel } from "@/lib/content";
+import { DIRECTIONS } from "@/lib/pricing";
+import { isClosed, slotsFor, ymd } from "@/lib/slots";
 
-function icsFile(opts: {
+export function icsFile(opts: {
   date: Date;
   time: string;
   minutes: number;
   summary: string;
-  services: string;
+  description: string;
   phoneLabel: string;
   alarm: string;
   location: string;
@@ -27,7 +29,7 @@ function icsFile(opts: {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Lapa Vet//BG//",
+    "PRODID:-//ONDE Salon//BG//",
     "CALSCALE:GREGORIAN",
     "BEGIN:VTIMEZONE",
     "TZID:Europe/Sofia",
@@ -47,12 +49,12 @@ function icsFile(opts: {
     "END:DAYLIGHT",
     "END:VTIMEZONE",
     "BEGIN:VEVENT",
-    `UID:${Date.now()}@lapa-vet.bg`,
+    `UID:${Date.now()}@onde.bg`,
     `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
     `DTSTART;TZID=Europe/Sofia:${stamp(startMin)}`,
     `DTEND;TZID=Europe/Sofia:${stamp(endMin)}`,
     `SUMMARY:${opts.summary}`,
-    `DESCRIPTION:${opts.services}\\n${opts.phoneLabel}: ${CLINIC.phone}`,
+    `DESCRIPTION:${opts.description}\\n${opts.phoneLabel}: ${SALON.phone}`,
     `LOCATION:${opts.location}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
@@ -70,12 +72,11 @@ export default function Booking() {
 
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(0);
-  const [animal, setAnimal] = useState("dog");
-  const [pet, setPet] = useState("");
+  const [direction, setDirection] = useState(0);
   const [picked, setPicked] = useState<string[]>([]);
+  const [master, setMaster] = useState(-1);
   const [dayIndex, setDayIndex] = useState(0);
   const [time, setTime] = useState<string | null>(null);
-  const [vet, setVet] = useState(-1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [done, setDone] = useState(false);
@@ -83,17 +84,36 @@ export default function Booking() {
 
   useEffect(() => setMounted(true), []);
 
+  // The price list hands the choice over rather than making it a second time.
   useEffect(() => {
     const onPick = (e: Event) => {
-      const detail = (e as CustomEvent<string[]>).detail;
-      if (detail?.length) {
-        setPicked(detail);
+      const detail = (e as CustomEvent<{ direction: number; keys: string[] }>).detail;
+      if (detail?.keys?.length) {
+        setDirection(detail.direction);
+        setPicked(detail.keys);
+        setMaster(-1);
         setDir(1);
         setStep(1);
       }
     };
-    window.addEventListener("lapa:select-services", onPick);
-    return () => window.removeEventListener("lapa:select-services", onPick);
+    // "Book with Irina" from the team section: the person is already chosen,
+    // so booking opens on the service step with her diary already attached.
+    const onMaster = (e: Event) => {
+      const detail = (e as CustomEvent<{ master: number; direction: number }>).detail;
+      if (detail && detail.master >= 0) {
+        setDirection(detail.direction);
+        setMaster(detail.master);
+        setPicked([]);
+        setDir(1);
+        setStep(0);
+      }
+    };
+    window.addEventListener("onde:select", onPick);
+    window.addEventListener("onde:master", onMaster);
+    return () => {
+      window.removeEventListener("onde:select", onPick);
+      window.removeEventListener("onde:master", onMaster);
+    };
   }, []);
 
   const days = useMemo(() => {
@@ -104,16 +124,29 @@ export default function Booking() {
       d.setDate(base.getDate() + i);
       return d;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
-  const day = days[dayIndex];
-  const slots = useMemo(() => (day ? slotsFor(day, vet < 0 ? undefined : vet) : []), [day, vet]);
+  /** Only the masters who actually work this direction. */
+  const crew = useMemo(
+    () =>
+      MASTER_META.map((m, i) => ({ index: i, ...m })).filter((m) =>
+        (m.directions as readonly string[]).includes(DIRECTIONS[direction].slug)
+      ),
+    [direction]
+  );
 
-  // Land on the first day this vet still has room, and drop a time that the
-  // chosen vet cannot actually take.
+  const day = days[dayIndex];
+  const slots = useMemo(
+    () => (day ? slotsFor(day, master < 0 ? undefined : master) : []),
+    [day, master]
+  );
+
+  // Land on the first day this master still has room, and drop a time that the
+  // chosen master cannot actually take.
   useEffect(() => {
     if (!mounted) return;
-    const pick = vet < 0 ? undefined : vet;
+    const pick = master < 0 ? undefined : master;
     const first = days.findIndex((d) => slotsFor(d, pick).some((s) => s.free));
     if (first >= 0 && !slotsFor(days[dayIndex], pick).some((s) => s.free)) setDayIndex(first);
     setTime((current) =>
@@ -122,17 +155,32 @@ export default function Booking() {
         : null
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, vet, dayIndex, days]);
+  }, [mounted, master, dayIndex, days]);
 
-  const chosen = SERVICE_META.map((m, i) => ({ ...m, title: t.services.items[i].title })).filter(
-    (s) => picked.includes(s.slug)
-  );
-  const totalEur = chosen.reduce((a, s) => a + s.price, 0);
+  // Changing direction can strand a master who does not work it.
+  useEffect(() => {
+    if (master >= 0 && !crew.some((m) => m.index === master)) setMaster(-1);
+  }, [crew, master]);
+
+  const chosen = DIRECTIONS[direction].items
+    .map((item, ii) => ({
+      ...item,
+      key: `${DIRECTIONS[direction].slug}/${item.slug}`,
+      title: t.directions.items[direction].prices[ii].title,
+    }))
+    .filter((s) => picked.includes(s.key));
+
+  const totalFrom = chosen.reduce((a, s) => a + s.from, 0);
+  const totalTo = chosen.reduce((a, s) => a + (s.to ?? s.from), 0);
   const totalMin = chosen.reduce((a, s) => a + s.duration, 0) || 30;
-  const price = priceLabel(totalEur, lang);
+  const price =
+    totalFrom === totalTo ? priceLabel(totalFrom, lang) : rangeLabel(totalFrom, totalTo, lang);
 
-  const animalLabel = b.animals.find((a) => a.id === animal)?.label ?? "";
-  const canNext = [true, picked.length > 0, !!time, name.trim().length > 1 && phone.trim().length > 5][step];
+  const masterName = master < 0 ? b.anyMaster : t.team.members[master].name;
+
+  const canNext = [picked.length > 0, true, !!time, name.trim().length > 1 && phone.trim().length > 5][
+    step
+  ];
 
   const download = () => {
     const blob = new Blob(
@@ -141,8 +189,8 @@ export default function Booking() {
           date: day,
           time: time!,
           minutes: totalMin,
-          summary: b.icsSummary(pet || animalLabel.toLowerCase()),
-          services: chosen.map((c) => c.title).join(", "),
+          summary: b.icsSummary(chosen.map((c) => c.title).join(", ")),
+          description: `${masterName} · ${chosen.map((c) => c.title).join(", ")}`,
           phoneLabel: b.icsPhone,
           alarm: b.icsAlarm,
           location: t.address,
@@ -153,48 +201,41 @@ export default function Booking() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "lapa-vet.ics";
+    a.download = "onde.ics";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const stepStyle = { ["--from" as string]: dir === 1 ? "28px" : "-28px" } as React.CSSProperties;
-
-  const vets = t.team.members.slice(0, 3);
-  const vetName = vet < 0 ? b.anyVet : vets[vet].name;
-  const shortName = (name: string) => {
-    const parts = name.split(" ");
-    return parts.length > 2 ? `${parts[0]} ${parts[parts.length - 1]}` : name;
-  };
-
   const dayLabel = (d: Date) => `${b.weekdays[d.getDay()]}, ${d.getDate()} ${b.months[d.getMonth()]}`;
 
   return (
-    <section id="chas" className="cursor-glow relative overflow-hidden bg-brand-dark py-20 text-white md:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
+    <section id="chas" className="cursor-glow ondes relative overflow-hidden border-b border-line bg-ink py-24 md:py-32">
       <div className="mx-auto max-w-5xl px-6">
         <div className="reveal text-center">
-          <span className="text-sm font-bold uppercase tracking-[0.18em] text-brand-light">{b.eyebrow}</span>
-          <h2 className="reveal wipe mt-3 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">{b.title}</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">{b.lead}</p>
+          <span className="eyebrow">{b.eyebrow}</span>
+          <h2 className="reveal wipe display mt-5 text-4xl text-bone sm:text-5xl">{b.title}</h2>
+          <p className="mx-auto mt-6 max-w-xl text-[16px] font-light leading-relaxed text-muted">
+            {b.lead}
+          </p>
         </div>
 
-        <div className="reveal mt-12 overflow-hidden rounded-[2rem] bg-white text-ink shadow-lift">
+        <div className="reveal mt-14 overflow-hidden rounded-2xl border border-line bg-ink-2">
           {!done && (
-            <div className="flex border-b border-ink/8">
+            <div className="flex border-b border-line">
               {b.steps.map((s, i) => (
                 <div
                   key={s}
-                  className={`flex flex-1 items-center justify-center gap-2 px-2 py-4 text-sm font-semibold transition ${
-                    i === step ? "bg-mint text-brand" : i < step ? "text-brand" : "text-ink-soft/60"
+                  className={`flex flex-1 items-center justify-center gap-2.5 px-2 py-4 text-[13px] font-light transition ${
+                    i === step ? "bg-ink-3 text-accent" : i < step ? "text-bone" : "text-muted/50"
                   }`}
                 >
                   <span
-                    className={`grid size-6 shrink-0 place-items-center rounded-full text-xs ${
-                      i <= step ? "bg-brand text-white" : "bg-ink/8"
+                    className={`grid size-5 shrink-0 place-items-center rounded-full text-[10px] ${
+                      i <= step ? "bg-accent text-ink" : "border border-line"
                     }`}
                   >
-                    {i < step ? <Icon name="check" className="size-3.5" /> : i + 1}
+                    {i < step ? <Icon name="check" className="size-2.5" /> : i + 1}
                   </span>
                   <span className="hidden sm:block">{s}</span>
                 </div>
@@ -205,65 +246,59 @@ export default function Booking() {
           <div className="p-6 sm:p-10 md:min-h-[32rem]">
             {done ? (
               <div className="pop-in text-center">
-                <span className="check-ring mx-auto grid size-20 place-items-center rounded-full bg-mint text-brand">
-                  <svg viewBox="0 0 48 48" className="size-11" fill="none" aria-hidden="true">
+                <span className="check-ring mx-auto grid size-20 place-items-center rounded-full border border-accent text-accent">
+                  <svg viewBox="0 0 48 48" className="size-10" fill="none" aria-hidden="true">
                     <path
                       className="check-path"
                       d="m13 25 8 8 15-17"
                       stroke="currentColor"
-                      strokeWidth="4"
+                      strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
                 </span>
-                <h3 className="mt-6 text-3xl font-extrabold tracking-tight">{b.doneTitle}</h3>
-                <p className="mt-2 text-ink-soft">{b.doneLead(phone)}</p>
+                <h3 className="display mt-8 text-3xl text-bone">{b.doneTitle}</h3>
+                <p className="mt-3 font-light text-muted">{b.doneLead(phone)}</p>
 
-                <div className="mx-auto mt-8 max-w-md rounded-[1.5rem] border border-ink/8 bg-cream p-6 text-left">
-                  <div className="flex items-center justify-between border-b border-ink/8 pb-4">
-                    <span className="text-sm font-semibold uppercase tracking-wider text-ink-soft">
+                <div className="mx-auto mt-10 max-w-md rounded-2xl border border-line bg-ink p-6 text-left">
+                  <div className="flex items-center justify-between border-b border-line pb-4">
+                    <span className="text-[11px] uppercase tracking-[0.2em] text-muted">
                       {b.cardTitle}
                     </span>
-                    <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">
+                    <span className="rounded-full bg-accent px-3 py-1 text-[11px] font-medium text-ink">
                       {b.confirmed}
                     </span>
                   </div>
-                  <dl className="mt-4 space-y-3 text-[15px]">
+                  <dl className="mt-5 space-y-3.5 text-[14px] font-light">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-ink-soft">{b.when}</dt>
-                      <dd className="text-right font-semibold">
+                      <dt className="text-muted">{b.when}</dt>
+                      <dd className="text-right text-bone">
                         {dayLabel(day)} · {time}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-ink-soft">{b.patient}</dt>
-                      <dd className="text-right font-semibold">
-                        {pet ? `${pet} (${animalLabel.toLowerCase()})` : animalLabel}
-                      </dd>
+                      <dt className="text-muted">{b.master}</dt>
+                      <dd className="text-right text-bone">{masterName}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-ink-soft">{b.servicesLabel}</dt>
-                      <dd className="text-right font-semibold">{chosen.map((c) => c.title).join(", ")}</dd>
+                      <dt className="text-muted">{b.servicesLabel}</dt>
+                      <dd className="text-right text-bone">{chosen.map((c) => c.title).join(", ")}</dd>
                     </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-soft">{b.vet}</dt>
-                      <dd className="text-right font-semibold">{vetName}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4 border-t border-ink/8 pt-3">
-                      <dt className="text-ink-soft">{b.approx}</dt>
+                    <div className="flex justify-between gap-4 border-t border-line pt-3.5">
+                      <dt className="text-muted">{b.approx}</dt>
                       <dd className="text-right">
-                        <span className="text-lg font-extrabold">{price.eur}</span>
-                        <span className="ml-2 text-sm text-ink-soft">{price.bgn}</span>
+                        <span className="display text-lg text-bone">{price.eur}</span>
+                        <span className="ml-2 text-[12px] text-muted">{price.bgn}</span>
                       </dd>
                     </div>
                   </dl>
                 </div>
 
-                <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <button
                     onClick={download}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-bone px-7 py-3.5 text-[15px] font-medium text-ink transition hover:bg-accent-soft"
                   >
                     <Icon name="calendar" className="size-5" />
                     {b.addCalendar}
@@ -274,11 +309,11 @@ export default function Booking() {
                       setStep(0);
                       setTime(null);
                       setPicked([]);
-                      setPet("");
+                      setMaster(-1);
                       setName("");
                       setPhone("");
                     }}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-ink/12 px-6 py-3.5 font-semibold text-ink transition hover:bg-mint"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-7 py-3.5 text-[15px] font-light text-bone transition hover:border-accent hover:text-accent"
                   >
                     {b.newBooking}
                   </button>
@@ -288,165 +323,210 @@ export default function Booking() {
               <>
                 {step === 0 && (
                   <div key="s0" className="step-in" style={stepStyle}>
-                    <h3 className="text-2xl font-bold tracking-tight">{b.q1}</h3>
-                    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      {b.animals.map((a) => (
+                    <h3 className="display text-2xl text-bone">{b.q1}</h3>
+                    <p className="mt-2 text-[14px] font-light text-muted">{b.q1sub}</p>
+
+                    <div className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {DIRECTIONS.map((d, di) => (
                         <button
-                          key={a.id}
-                          onClick={() => setAnimal(a.id)}
-                          className={`rounded-2xl border p-5 text-center transition ${
-                            animal === a.id
-                              ? "border-brand bg-mint text-brand shadow-soft"
-                              : "border-ink/10 hover:border-brand/40"
+                          key={d.slug}
+                          onClick={() => {
+                            setDirection(di);
+                            setPicked([]);
+                            setMaster(-1);
+                          }}
+                          className={`rounded-xl border px-3 py-4 text-center transition ${
+                            direction === di
+                              ? "border-accent bg-ink-3 text-accent"
+                              : "border-line text-muted hover:border-accent/50"
                           }`}
                         >
-                          <span className="block text-3xl">{a.emoji}</span>
-                          <span className="mt-2 block font-semibold">{a.label}</span>
+                          <Icon name={d.icon} className="mx-auto size-5" />
+                          <span className="mt-2.5 block text-[14px] font-light">
+                            {t.directions.items[di].title}
+                          </span>
                         </button>
                       ))}
                     </div>
-                    <label className="mt-6 block">
-                      <span className="text-sm font-semibold text-ink-soft">{b.petName}</span>
-                      <input
-                        value={pet}
-                        onChange={(e) => setPet(e.target.value)}
-                        placeholder={b.petPlaceholder}
-                        className="mt-2 w-full rounded-2xl border border-ink/12 bg-cream px-5 py-4 text-lg outline-none transition focus:border-brand focus:bg-white"
-                      />
-                    </label>
+
+                    <ul className="mt-8 divide-y divide-line border-y border-line">
+                      {DIRECTIONS[direction].items.map((item, ii) => {
+                        const key = `${DIRECTIONS[direction].slug}/${item.slug}`;
+                        const copy = t.directions.items[direction].prices[ii];
+                        const p = rangeLabel(item.from, item.to, lang);
+                        const on = picked.includes(key);
+                        return (
+                          <li key={key}>
+                            <button
+                              onClick={() =>
+                                setPicked((v) =>
+                                  v.includes(key) ? v.filter((x) => x !== key) : [...v, key]
+                                )
+                              }
+                              className="group flex w-full items-center gap-4 py-4 text-left"
+                            >
+                              <span
+                                className={`grid size-5 shrink-0 place-items-center rounded-full border transition ${
+                                  on
+                                    ? "border-accent bg-accent text-ink"
+                                    : "border-line text-transparent group-hover:border-accent"
+                                }`}
+                              >
+                                <Icon name="check" className="size-2.5" />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className={`block text-[15px] font-light ${on ? "text-accent-soft" : "text-bone"}`}>
+                                  {copy.title}
+                                </span>
+                                <span className="text-[12px] font-light text-muted">
+                                  ~{item.duration} {t.directions.min}
+                                </span>
+                              </span>
+                              <span className="display shrink-0 text-[17px] text-bone">{p.eur}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
 
                 {step === 1 && (
                   <div key="s1" className="step-in" style={stepStyle}>
-                    <h3 className="text-2xl font-bold tracking-tight">{b.q2}</h3>
-                    <p className="mt-1 text-ink-soft">{b.q2sub}</p>
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                      {SERVICE_META.map((meta, i) => {
-                        const copy = t.services.items[i];
-                        const on = picked.includes(meta.slug);
-                        const p = priceLabel(meta.price, lang);
+                    <h3 className="display text-2xl text-bone">{b.q2}</h3>
+                    <p className="mt-2 text-[14px] font-light text-muted">{b.q2sub}</p>
+
+                    <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                      <button
+                        onClick={() => setMaster(-1)}
+                        className={`flex items-center gap-4 rounded-xl border p-4 text-left transition ${
+                          master === -1 ? "border-accent bg-ink-3" : "border-line hover:border-accent/50"
+                        }`}
+                      >
+                        <span className="grid size-14 shrink-0 place-items-center rounded-full border border-line text-muted">
+                          <Icon name="user" className="size-5" />
+                        </span>
+                        <span>
+                          <span className={`block text-[15px] font-light ${master === -1 ? "text-accent" : "text-bone"}`}>
+                            {b.anyMaster}
+                          </span>
+                          <span className="text-[12px] font-light text-muted">
+                            {t.directions.items[direction].title}
+                          </span>
+                        </span>
+                      </button>
+
+                      {crew.map((m) => {
+                        const member = t.team.members[m.index];
+                        const on = master === m.index;
                         return (
                           <button
-                            key={meta.slug}
-                            onClick={() =>
-                              setPicked((v) =>
-                                v.includes(meta.slug) ? v.filter((x) => x !== meta.slug) : [...v, meta.slug]
-                              )
-                            }
-                            className={`flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                              on ? "border-brand bg-mint" : "border-ink/10 hover:border-brand/40"
+                            key={m.index}
+                            onClick={() => setMaster(m.index)}
+                            className={`flex items-center gap-4 rounded-xl border p-4 text-left transition ${
+                              on ? "border-accent bg-ink-3" : "border-line hover:border-accent/50"
                             }`}
                           >
-                            <span
-                              className={`grid size-11 shrink-0 place-items-center rounded-xl ${
-                                on ? "bg-brand text-white" : "bg-cream text-brand"
-                              }`}
-                            >
-                              <Icon name={meta.icon} className="size-5" />
+                            <span className="relative size-14 shrink-0 overflow-hidden rounded-full">
+                              <Photo
+                                src={m.photo}
+                                alt={member.name}
+                                sizes="56px"
+                                label={member.name}
+                                className="object-cover"
+                              />
                             </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block font-semibold">{copy.title}</span>
-                              <span className="block text-sm text-ink-soft">
-                                {t.services.from} {p.eur} · ~{meta.duration} {t.services.min}
+                            <span className="min-w-0">
+                              <span className={`block text-[15px] font-light ${on ? "text-accent" : "text-bone"}`}>
+                                {member.name}
                               </span>
-                            </span>
-                            <span
-                              className={`grid size-6 shrink-0 place-items-center rounded-full border ${
-                                on ? "border-brand bg-brand text-white" : "border-ink/15 text-transparent"
-                              }`}
-                            >
-                              <Icon name="check" className="size-3.5" />
+                              <span className="block truncate text-[12px] font-light text-muted">
+                                {member.role}
+                              </span>
                             </span>
                           </button>
                         );
                       })}
                     </div>
+
+                    {master >= 0 && (
+                      <p className="mt-6 text-[13px] font-light text-muted">
+                        {b.masterHint(t.team.members[master].name)}
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {step === 2 && (
                   <div key="s2" className="step-in" style={stepStyle}>
-                    <h3 className="text-2xl font-bold tracking-tight">{b.q3}</h3>
+                    <h3 className="display text-2xl text-bone">{b.q3}</h3>
 
                     {!mounted ? (
-                      <div className="mt-6 h-24 animate-pulse rounded-2xl bg-cream" />
+                      <div className="mt-7 h-24 animate-pulse rounded-xl bg-ink-3" />
                     ) : (
                       <>
-                        <div className="mt-6">
-                          <span className="text-sm font-semibold text-ink-soft">{b.vetLabel}</span>
-                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {[{ i: -1, label: b.anyVet }, ...vets.map((m, i) => ({ i, label: shortName(m.name) }))].map(
-                              (option) => (
+                        <div className="no-scrollbar -mx-1 mt-7 flex gap-2 overflow-x-auto px-1 pb-2">
+                          {days.map((d, i) => {
+                            const closed = isClosed(d);
+                            return (
+                              <button
+                                key={i}
+                                disabled={closed}
+                                onClick={() => {
+                                  setDayIndex(i);
+                                  setTime(null);
+                                }}
+                                className={`min-w-[5.2rem] shrink-0 rounded-xl border px-3 py-3 text-center transition ${
+                                  closed
+                                    ? "cursor-not-allowed border-transparent bg-ink-3/40 text-muted/30"
+                                    : i === dayIndex
+                                      ? "border-accent bg-ink-3 text-accent"
+                                      : "border-line text-bone hover:border-accent/50"
+                                }`}
+                              >
+                                <span className="block text-[10px] uppercase tracking-[0.14em] opacity-70">
+                                  {i === 0 ? t.hero.today : i === 1 ? t.hero.tomorrow : b.weekdays[d.getDay()]}
+                                </span>
+                                <span className="display mt-1 block text-xl">{d.getDate()}</span>
+                                <span className="block text-[10px] opacity-60">
+                                  {b.months[d.getMonth()].slice(0, 3)}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {day && isClosed(day) ? (
+                          <p className="mt-7 rounded-xl border border-line bg-ink px-5 py-4 text-[14px] font-light text-muted">
+                            {b.closedDay}
+                          </p>
+                        ) : (
+                          <>
+                            {slots.every((s) => !s.free) && (
+                              <p className="mt-7 rounded-xl border border-line bg-ink px-5 py-4 text-[14px] font-light text-muted">
+                                {b.noSlots}
+                              </p>
+                            )}
+                            <div className="mt-7 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                              {slots.map((s) => (
                                 <button
-                                  key={option.i}
-                                  onClick={() => setVet(option.i)}
-                                  className={`rounded-2xl border px-3 py-3 text-[15px] font-semibold transition ${
-                                    vet === option.i
-                                      ? "border-brand bg-mint text-brand shadow-soft"
-                                      : "border-ink/10 text-ink-soft hover:border-brand/40"
+                                  key={s.time}
+                                  disabled={!s.free}
+                                  onClick={() => setTime(s.time)}
+                                  className={`rounded-lg border py-3 text-[14px] font-light transition ${
+                                    time === s.time
+                                      ? "border-accent bg-accent text-ink"
+                                      : s.free
+                                        ? "border-line text-bone hover:border-accent hover:text-accent"
+                                        : "cursor-not-allowed border-transparent bg-ink-3/50 text-muted/25 line-through"
                                   }`}
                                 >
-                                  {option.label}
+                                  {s.time}
                                 </button>
-                              )
-                            )}
-                          </div>
-                          {vet >= 0 && (
-                            <p className="mt-2 text-sm text-ink-soft">{b.vetHint(vets[vet].name)}</p>
-                          )}
-                        </div>
-
-                        <div className="no-scrollbar -mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-2">
-                          {days.map((d, i) => (
-                            <button
-                              key={i}
-                              onClick={() => {
-                                setDayIndex(i);
-                                setTime(null);
-                              }}
-                              className={`min-w-[5.4rem] shrink-0 rounded-2xl border px-3 py-3 text-center transition ${
-                                i === dayIndex
-                                  ? "border-brand bg-brand text-white shadow-soft"
-                                  : "border-ink/10 hover:border-brand/40"
-                              }`}
-                            >
-                              <span className="block text-xs uppercase tracking-wide opacity-70">
-                                {i === 0 ? t.hero.today : i === 1 ? t.hero.tomorrow : b.weekdays[d.getDay()]}
-                              </span>
-                              <span className="mt-0.5 block text-xl font-bold">{d.getDate()}</span>
-                              <span className="block text-xs opacity-70">
-                                {b.months[d.getMonth()].slice(0, 3)}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-
-                        {slots.every((s) => !s.free) && (
-                          <p className="mt-6 rounded-2xl bg-cream px-5 py-4 text-[15px] text-ink-soft">
-                            {b.noSlots}
-                          </p>
+                              ))}
+                            </div>
+                          </>
                         )}
-
-                        <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                          {slots.map((s) => (
-                            <button
-                              key={s.time}
-                              disabled={!s.free}
-                              onClick={() => setTime(s.time)}
-                              className={`rounded-xl border py-3 text-[15px] font-semibold transition ${
-                                time === s.time
-                                  ? "border-brand bg-brand text-white"
-                                  : s.free
-                                    ? "border-ink/10 hover:border-brand hover:text-brand"
-                                    : "cursor-not-allowed border-transparent bg-cream text-ink-soft/35 line-through"
-                              }`}
-                            >
-                              {s.time}
-                            </button>
-                          ))}
-                        </div>
-
                       </>
                     )}
                   </div>
@@ -454,55 +534,59 @@ export default function Booking() {
 
                 {step === 3 && (
                   <div key="s3" className="step-in" style={stepStyle}>
-                    <h3 className="text-2xl font-bold tracking-tight">{b.q4}</h3>
-                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <h3 className="display text-2xl text-bone">{b.q4}</h3>
+                    <div className="mt-7 grid gap-4 sm:grid-cols-2">
                       <label className="block">
-                        <span className="text-sm font-semibold text-ink-soft">{b.yourName}</span>
+                        <span className="text-[12px] uppercase tracking-[0.16em] text-muted">
+                          {b.yourName}
+                        </span>
                         <input
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder={b.namePlaceholder}
-                          className="mt-2 w-full rounded-2xl border border-ink/12 bg-cream px-5 py-4 text-lg outline-none transition focus:border-brand focus:bg-white"
+                          className="mt-2.5 w-full rounded-xl border border-line bg-ink px-5 py-4 text-[16px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
                         />
                       </label>
                       <label className="block">
-                        <span className="text-sm font-semibold text-ink-soft">{b.phone}</span>
+                        <span className="text-[12px] uppercase tracking-[0.16em] text-muted">
+                          {b.phone}
+                        </span>
                         <input
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           inputMode="tel"
                           placeholder={b.phonePlaceholder}
-                          className="mt-2 w-full rounded-2xl border border-ink/12 bg-cream px-5 py-4 text-lg outline-none transition focus:border-brand focus:bg-white"
+                          className="mt-2.5 w-full rounded-xl border border-line bg-ink px-5 py-4 text-[16px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
                         />
                       </label>
                     </div>
 
-                    <div className="mt-6 rounded-2xl bg-cream p-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="text-[15px] text-ink-soft">
+                    <div className="mt-7 rounded-xl border border-line bg-ink p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="text-[14px] font-light text-muted">
                           {day && (
                             <>
-                              {dayLabel(day)} · <strong className="text-ink">{time}</strong> ·{" "}
-                              {chosen.map((c) => c.title).join(", ")}
+                              {dayLabel(day)} · <span className="text-bone">{time}</span> ·{" "}
+                              {masterName} · {chosen.map((c) => c.title).join(", ")}
                             </>
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-extrabold">{price.eur}</div>
-                          <div className="text-sm text-ink-soft">{price.bgn}</div>
+                          <div className="display text-2xl text-bone">{price.eur}</div>
+                          <div className="text-[12px] font-light text-muted">{price.bgn}</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div className="mt-8 flex items-center justify-between gap-4 border-t border-ink/8 pt-6">
+                <div className="mt-10 flex items-center justify-between gap-4 border-t border-line pt-7">
                   <button
                     onClick={() => {
                       setDir(-1);
                       setStep((s) => Math.max(0, s - 1));
                     }}
-                    className={`rounded-full px-5 py-3 font-semibold text-ink-soft transition hover:text-ink ${
+                    className={`rounded-full px-5 py-3 text-[14px] font-light text-muted transition hover:text-bone ${
                       step === 0 ? "invisible" : ""
                     }`}
                   >
@@ -515,10 +599,10 @@ export default function Booking() {
                       setDir(1);
                       setStep((s) => s + 1);
                     }}
-                    className="magnetic sweep on-light inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-ink/12 disabled:text-ink-soft"
+                    className="magnetic sweep on-light inline-flex items-center gap-2 rounded-full bg-bone px-8 py-3.5 text-[15px] font-medium text-ink transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:bg-ink-3 disabled:text-muted/40"
                   >
                     {step === 3 ? b.confirm : b.next}
-                    <Icon name="arrow" className="size-5" />
+                    <Icon name="arrow" className="size-4" />
                   </button>
                 </div>
               </>
@@ -526,10 +610,10 @@ export default function Booking() {
           </div>
         </div>
 
-        <p className="reveal mt-6 text-center text-sm text-white/50">
+        <p className="reveal mt-8 text-center text-[13px] font-light text-muted">
           {b.phonePrefer}{" "}
-          <a href={`tel:${CLINIC.phoneHref}`} className="font-semibold text-white underline">
-            {CLINIC.phone}
+          <a href={`tel:${SALON.phoneHref}`} className="text-accent underline underline-offset-4">
+            {SALON.phone}
           </a>
         </p>
       </div>

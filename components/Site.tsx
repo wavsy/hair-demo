@@ -1,13 +1,14 @@
 "use client";
 
-import Advantages from "./Advantages";
 import Assistant from "./Assistant";
 import Booking from "./Booking";
 import Contact from "./Contact";
+import Courses from "./Courses";
+import Directions from "./Directions";
 import Effects from "./Effects";
-import Emergency from "./Emergency";
 import Faq from "./Faq";
 import Footer from "./Footer";
+import Gallery from "./Gallery";
 import Header from "./Header";
 import Hero from "./Hero";
 import HtmlLang from "./HtmlLang";
@@ -17,9 +18,8 @@ import MobileBar from "./MobileBar";
 import Reveal from "./Reveal";
 import Reviews from "./Reviews";
 import ScrollProgress from "./ScrollProgress";
-import Services from "./Services";
-import Shop from "./Shop";
 import Team from "./Team";
+import Why from "./Why";
 import { getContent, type Lang } from "@/lib/content";
 
 export default function Site({ lang }: { lang: Lang }) {
@@ -32,13 +32,13 @@ export default function Site({ lang }: { lang: Lang }) {
       <main>
         <Hero />
         <Marquee />
-        <Services />
+        <Directions />
         <Booking />
-        <Advantages />
-        <Emergency />
+        <Why />
         <Team />
+        <Courses />
+        <Gallery />
         <Reviews />
-        <Shop />
         <Faq />
         <Contact />
       </main>

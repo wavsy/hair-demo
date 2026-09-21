@@ -65,14 +65,14 @@ export default function Assistant() {
     <>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-24 right-4 z-[55] flex items-center gap-2.5 rounded-full bg-brand p-3 font-semibold text-white shadow-lift transition-all duration-300 hover:bg-brand-dark md:bottom-6 md:py-3.5 md:pl-4 md:pr-5 ${
+        className={`fixed bottom-24 right-4 z-[55] flex items-center gap-2.5 rounded-full border border-line bg-ink-2 p-3 text-[14px] font-light text-bone shadow-lift transition-all duration-300 hover:border-accent md:bottom-6 md:py-3.5 md:pl-4 md:pr-5 ${
           open ? "pointer-events-none scale-90 opacity-0" : "scale-100 opacity-100"
         }`}
         aria-label={t.assistant.open}
       >
-        <span className="relative grid size-8 place-items-center rounded-full bg-white/15">
+        <span className="relative grid size-8 place-items-center rounded-full bg-ink-3 text-accent">
           <LogoMark className="size-5" />
-          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-emerald-300 ring-2 ring-brand dot-live" />
+          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-accent ring-2 ring-ink-2 dot-live" />
         </span>
         <span className="hidden md:inline">{t.assistant.open}</span>
       </button>
@@ -84,38 +84,38 @@ export default function Assistant() {
             : "pointer-events-none translate-y-4 scale-95 opacity-0"
         }`}
       >
-        <div className="flex h-[min(34rem,80vh)] flex-col overflow-hidden rounded-[1.75rem] border border-ink/8 bg-white shadow-lift">
-          <div className="flex items-center gap-3 border-b border-ink/8 bg-brand-dark px-5 py-4 text-white">
-            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/12">
+        <div className="flex h-[min(34rem,80vh)] flex-col overflow-hidden rounded-2xl border border-line bg-ink-2 shadow-lift">
+          <div className="flex items-center gap-3 border-b border-line bg-ink px-5 py-4 text-bone">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
               <LogoMark className="size-6" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="font-bold leading-tight">{t.assistant.title}</div>
-              <div className="flex items-center gap-1.5 text-xs text-white/60">
-                <span className="size-1.5 rounded-full bg-emerald-300 dot-live" />
+              <div className="text-[15px] font-light leading-tight">{t.assistant.title}</div>
+              <div className="flex items-center gap-1.5 text-[12px] font-light text-muted">
+                <span className="size-1.5 rounded-full bg-accent dot-live" />
                 {t.assistant.subtitle}
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="grid size-9 place-items-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="grid size-9 place-items-center rounded-full text-muted transition hover:text-bone"
               aria-label={t.nav.close}
             >
               <Icon name="close" className="size-5" />
             </button>
           </div>
 
-          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto bg-cream px-4 py-4">
+          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto bg-ink px-4 py-4">
             {msgs.map((m) => (
               <div
                 key={m.id}
                 className={`pop-in flex ${m.from === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
+                  className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-3 text-[14px] font-light leading-relaxed ${
                     m.from === "user"
-                      ? "rounded-br-md bg-brand text-white"
-                      : "rounded-bl-md border border-ink/8 bg-white text-ink shadow-soft"
+                      ? "rounded-br-md bg-accent text-ink"
+                      : "rounded-bl-md border border-line bg-ink-2 text-bone"
                   }`}
                 >
                   {m.from === "bot" && !m.settled ? (
@@ -139,7 +139,7 @@ export default function Assistant() {
                           key={a.label + a.href}
                           href={a.href}
                           onClick={() => a.href.startsWith("#") && setOpen(false)}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3.5 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-2 text-[13px] font-light text-accent transition hover:border-accent"
                         >
                           {a.label}
                           <Icon name="arrow" className="size-3.5" />
@@ -153,11 +153,11 @@ export default function Assistant() {
 
             {thinking && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-ink/8 bg-white px-4 py-3.5 shadow-soft">
+                <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-line bg-ink-2 px-4 py-3.5">
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
-                      className="size-1.5 rounded-full bg-brand/50 dot-live"
+                      className="size-1.5 rounded-full bg-accent/60 dot-live"
                       style={{ animationDelay: `${i * 0.18}s` }}
                     />
                   ))}
@@ -166,13 +166,13 @@ export default function Assistant() {
             )}
           </div>
 
-          <div className="border-t border-ink/8 bg-white px-4 pb-3 pt-3">
+          <div className="border-t border-line bg-ink-2 px-4 pb-3 pt-3">
             <div className="no-scrollbar -mx-1 mb-2.5 flex gap-2 overflow-x-auto px-1">
               {t.assistant.chips.map((c) => (
                 <button
                   key={c}
                   onClick={() => ask(c)}
-                  className="shrink-0 rounded-full border border-ink/12 px-3.5 py-1.5 text-sm font-medium text-ink-soft transition hover:border-brand hover:bg-mint hover:text-brand"
+                  className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-light text-muted transition hover:border-accent hover:text-accent"
                 >
                   {c}
                 </button>
@@ -190,18 +190,18 @@ export default function Assistant() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={t.assistant.placeholder}
-                className="min-w-0 flex-1 rounded-full border border-ink/12 bg-cream px-4 py-3 text-[15px] outline-none transition focus:border-brand focus:bg-white"
+                className="min-w-0 flex-1 rounded-full border border-line bg-ink px-4 py-3 text-[14px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || thinking}
-                className="grid size-11 shrink-0 place-items-center rounded-full bg-brand text-white transition hover:bg-brand-dark disabled:bg-ink/12 disabled:text-ink-soft"
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-bone text-ink transition hover:bg-accent-soft disabled:bg-ink-3 disabled:text-muted/40"
                 aria-label={t.assistant.send}
               >
                 <Icon name="arrow" className="size-5" />
               </button>
             </form>
-            <p className="mt-2 text-center text-[11px] leading-snug text-ink-soft/70">
+            <p className="mt-2 text-center text-[11px] font-light leading-snug text-muted/60">
               {t.assistant.disclaimer}
             </p>
           </div>

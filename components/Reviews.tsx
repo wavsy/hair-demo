@@ -1,66 +1,53 @@
 "use client";
 
-import Image from "next/image";
 import Icon from "./Icon";
 import { useI18n } from "./I18n";
-import { CLINIC } from "@/lib/content";
+import { SALON } from "@/lib/content";
 
 export default function Reviews() {
   const { t } = useI18n();
   return (
-    <section id="otzivi" className="relative overflow-hidden bg-white py-20 md:py-28">
+    <section id="otzivi" className="border-b border-line bg-ink-2 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.4fr] lg:gap-16">
+        <div className="grid gap-14 lg:grid-cols-[0.85fr_1.4fr] lg:gap-20">
           <div className="reveal">
-            <span className="text-sm font-bold uppercase tracking-[0.18em] text-brand-light">
-              {t.reviews.eyebrow}
-            </span>
-            <h2 className="reveal wipe mt-3 text-4xl font-extrabold tracking-[-0.03em] text-ink sm:text-5xl">
+            <span className="eyebrow">{t.reviews.eyebrow}</span>
+            <h2 className="reveal wipe display mt-5 text-4xl text-bone sm:text-5xl">
               {t.reviews.title1}
               <br />
-              {t.reviews.title2}
+              <span className="italic text-accent-soft">{t.reviews.title2}</span>
             </h2>
 
-            <div className="mt-8 flex items-center gap-4 rounded-3xl border border-ink/8 bg-cream p-5">
-              <div className="text-5xl font-extrabold tracking-tight">{CLINIC.rating}</div>
+            <div className="mt-10 flex items-center gap-5 border-y border-line py-6">
+              <div className="display text-6xl text-bone">{SALON.rating}</div>
               <div>
-                <div className="flex gap-0.5 text-accent">
+                <div className="flex gap-1 text-accent">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Icon key={i} name="star" className="size-5 fill-accent" />
+                    <Icon key={i} name="star" className="size-3.5 fill-accent" />
                   ))}
                 </div>
-                <p className="mt-1 text-sm text-ink-soft">{t.reviews.ratingNote}</p>
+                <p className="mt-2 text-[13px] font-light text-muted">{t.reviews.ratingNote}</p>
               </div>
-            </div>
-
-            <div className="reveal zoom relative mt-8 aspect-[4/3] overflow-hidden rounded-[1.75rem] shadow-soft">
-              <Image
-                src="/images/friends.jpg"
-                alt=""
-                fill
-                sizes="(max-width: 1024px) 100vw, 30vw"
-                className="object-cover"
-              />
             </div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             {t.reviews.items.map((r, i) => (
               <figure
                 key={r.author}
-                className={`reveal rounded-[1.75rem] border border-ink/8 p-7 shadow-soft ${
-                  i === 1 ? "bg-mint lg:ml-12" : "bg-cream"
-                } lg:max-w-2xl`}
+                className={`reveal border border-line p-8 ${i === 1 ? "bg-ink lg:ml-16" : "bg-ink/40"} lg:max-w-2xl`}
               >
-                <div className="flex gap-0.5 text-accent">
+                <div className="flex gap-1 text-accent">
                   {Array.from({ length: 5 }).map((_, j) => (
-                    <Icon key={j} name="star" className="size-4 fill-accent" />
+                    <Icon key={j} name="star" className="size-3 fill-accent" />
                   ))}
                 </div>
-                <blockquote className="mt-4 text-lg leading-relaxed text-ink">„{r.text}“</blockquote>
-                <figcaption className="mt-5 text-sm">
-                  <span className="font-bold text-ink">{r.author}</span>
-                  <span className="text-ink-soft"> · {r.meta}</span>
+                <blockquote className="display mt-5 text-[1.35rem] leading-snug text-bone">
+                  „{r.text}“
+                </blockquote>
+                <figcaption className="mt-6 text-[13px] font-light">
+                  <span className="text-bone">{r.author}</span>
+                  <span className="text-muted"> · {r.meta}</span>
                 </figcaption>
               </figure>
             ))}

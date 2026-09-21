@@ -44,3 +44,6 @@ next-env.d.ts
 AGENTS.md
 .idea/
 .vscode/
+
+# Photo alternates fetched by `npm run photos` — only the chosen one is committed.
+public/images/_alt/

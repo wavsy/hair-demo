@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "test": "node --import ./tests/resolve-ts.mjs --test \"tests/*.test.mts\"",
-    "test:e2e": "node --test tests/e2e.mjs"
+    "test:e2e": "node --test tests/e2e.mjs",
+    "photos": "node scripts/fetch-photos.mjs"
   },
   "dependencies": {
     "next": "16.3.5",

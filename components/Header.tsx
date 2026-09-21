@@ -6,7 +6,7 @@ import Icon from "./Icon";
 import Logo from "./Logo";
 import OpenStatus from "./OpenStatus";
 import { useI18n } from "./I18n";
-import { CLINIC } from "@/lib/content";
+import { SALON } from "@/lib/content";
 
 export default function Header() {
   const { t, other } = useI18n();
@@ -14,10 +14,10 @@ export default function Header() {
   const [menu, setMenu] = useState(false);
 
   const nav = [
-    { href: "#uslugi", label: t.nav.services },
+    { href: "#napravleniya", label: t.nav.directions },
     { href: "#ekip", label: t.nav.team },
-    { href: "#otzivi", label: t.nav.reviews },
-    { href: "#magazin", label: t.nav.shop },
+    { href: "#kursove", label: t.nav.courses },
+    { href: "#galeriya", label: t.nav.gallery },
     { href: "#kontakti", label: t.nav.contact },
   ];
 
@@ -37,33 +37,27 @@ export default function Header() {
 
   return (
     <>
-      <div className="hidden bg-brand-dark text-white/85 md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-sm">
+      <div className="hidden border-b border-line bg-ink text-muted md:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5 text-[13px] font-light">
           <OpenStatus />
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-7">
+            <span className="tracking-wide text-accent-soft/70">{t.topbar.tagline}</span>
             <span className="flex items-center gap-2">
-              <Icon name="pin" className="size-4" />
+              <Icon name="pin" className="size-3.5" />
               {t.address}
             </span>
-            <a
-              href={`tel:${CLINIC.emergencyHref}`}
-              className="flex items-center gap-2 font-semibold text-white transition hover:text-accent-soft"
-            >
-              <Icon name="alert" className="size-4" />
-              {t.topbar.emergency} · {CLINIC.emergency}
-            </a>
           </div>
         </div>
       </div>
 
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-cream/85 shadow-soft backdrop-blur-xl" : "bg-transparent"
+          scrolled ? "border-b border-line bg-ink/90 backdrop-blur-xl" : "bg-transparent"
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-4">
-          <a href="#" aria-label={t.clinicName}>
-            <Logo tone={scrolled ? "dark" : "light"} name={t.brand.name} sub={t.brand.sub} />
+          <a href="#" aria-label={t.salonName}>
+            <Logo name={t.brand.name} sub={t.brand.sub} />
           </a>
 
           <nav className="ml-auto hidden items-center gap-1 lg:flex">
@@ -71,11 +65,7 @@ export default function Header() {
               <a
                 key={n.href}
                 href={n.href}
-                className={`rounded-full px-4 py-2 text-[15px] font-medium transition ${
-                  scrolled
-                    ? "text-ink-soft hover:bg-mint hover:text-brand"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
-                }`}
+                className="rounded-full px-4 py-2 text-[14px] font-light tracking-wide text-muted transition hover:text-bone"
               >
                 {n.label}
               </a>
@@ -85,40 +75,28 @@ export default function Header() {
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Link
               href={other}
-              className={`hidden size-11 place-items-center rounded-full border text-sm font-bold transition sm:grid ${
-                scrolled
-                  ? "border-brand/15 text-brand hover:bg-mint"
-                  : "border-white/20 text-white hover:bg-white/10"
-              }`}
+              className="hidden size-10 place-items-center rounded-full border border-line text-[13px] font-medium tracking-wider text-muted transition hover:border-accent hover:text-accent sm:grid"
               aria-label={t.nav.otherLang}
             >
               {t.nav.otherLang}
             </Link>
             <a
-              href={`tel:${CLINIC.phoneHref}`}
-              className={`hidden items-center gap-2 rounded-full border px-4 py-2.5 text-[15px] font-semibold transition xl:flex ${
-                scrolled
-                  ? "border-brand/15 text-brand hover:bg-mint"
-                  : "border-white/20 text-white hover:bg-white/10"
-              }`}
+              href={`tel:${SALON.phoneHref}`}
+              className="hidden items-center gap-2 rounded-full border border-line px-4 py-2.5 text-[14px] font-light text-muted transition hover:border-accent hover:text-accent xl:flex"
             >
               <Icon name="phone" className="size-4" />
-              {CLINIC.phone}
+              {SALON.phone}
             </a>
             <a
               href="#chas"
-              className={`hidden items-center gap-2 rounded-full px-5 py-2.5 text-[15px] font-semibold shadow-soft transition sm:flex ${
-                scrolled ? "bg-brand text-white hover:bg-brand-dark" : "bg-white text-ink hover:bg-mint"
-              }`}
+              className="magnetic sweep on-light hidden items-center gap-2 rounded-full bg-bone px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-accent-soft sm:flex"
             >
               {t.nav.book}
               <Icon name="arrow" className="size-4" />
             </a>
             <button
               onClick={() => setMenu(true)}
-              className={`grid size-11 place-items-center rounded-full border transition lg:hidden ${
-                scrolled ? "border-brand/15 text-brand" : "border-white/20 text-white"
-              }`}
+              className="grid size-10 place-items-center rounded-full border border-line text-bone lg:hidden"
               aria-label={t.nav.menu}
             >
               <Icon name="menu" className="size-5" />
@@ -128,47 +106,47 @@ export default function Header() {
       </header>
 
       {menu && (
-        <div className="fixed inset-0 z-[60] overflow-y-auto bg-cream p-6 lg:hidden">
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-ink p-6 lg:hidden">
           <div className="flex items-center justify-between">
             <Logo name={t.brand.name} sub={t.brand.sub} />
             <button
               onClick={() => setMenu(false)}
-              className="grid size-11 place-items-center rounded-full border border-brand/15 text-brand"
+              className="grid size-10 place-items-center rounded-full border border-line text-bone"
               aria-label={t.nav.close}
             >
               <Icon name="close" className="size-5" />
             </button>
           </div>
-          <nav className="mt-10 flex flex-col gap-1">
+          <nav className="mt-12 flex flex-col">
             {nav.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
                 onClick={() => setMenu(false)}
-                className="rounded-2xl px-4 py-3.5 text-2xl font-semibold tracking-tight transition hover:bg-mint"
+                className="display border-b border-line py-5 text-3xl text-bone"
               >
                 {n.label}
               </a>
             ))}
           </nav>
-          <div className="mt-8 space-y-3">
+          <div className="mt-10 space-y-3">
             <a
               href="#chas"
               onClick={() => setMenu(false)}
-              className="flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-4 text-lg font-semibold text-white"
+              className="flex items-center justify-center gap-2 rounded-full bg-bone px-6 py-4 text-base font-medium text-ink"
             >
               {t.nav.book}
             </a>
             <a
-              href={`tel:${CLINIC.emergencyHref}`}
-              className="flex items-center justify-center gap-2 rounded-full border border-alarm/25 px-6 py-4 text-lg font-semibold text-alarm"
+              href={`tel:${SALON.phoneHref}`}
+              className="flex items-center justify-center gap-2 rounded-full border border-line px-6 py-4 text-base font-light text-bone"
             >
-              <Icon name="alert" className="size-5" />
-              {t.topbar.emergency}
+              <Icon name="phone" className="size-5" />
+              {SALON.phone}
             </a>
             <Link
               href={other}
-              className="flex items-center justify-center gap-2 rounded-full border border-brand/15 px-6 py-4 text-lg font-semibold text-brand"
+              className="flex items-center justify-center gap-2 rounded-full border border-line px-6 py-4 text-base font-light text-muted"
             >
               {t.nav.otherLang}
             </Link>
