@@ -76,6 +76,9 @@ export default function Booking() {
   const [picked, setPicked] = useState<string[]>([]);
   const [master, setMaster] = useState(-1);
   const [dayIndex, setDayIndex] = useState(0);
+  // Whether the visitor has picked a day themselves. Once they have, the
+  // choice stands: only a day with nothing free at all is overridden.
+  const [dayPicked, setDayPicked] = useState(false);
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -147,15 +150,24 @@ export default function Booking() {
   useEffect(() => {
     if (!mounted) return;
     const pick = master < 0 ? undefined : master;
-    const first = days.findIndex((d) => slotsFor(d, pick).some((s) => s.free));
-    if (first >= 0 && !slotsFor(days[dayIndex], pick).some((s) => s.free)) setDayIndex(first);
+    const free = (d: Date) => slotsFor(d, pick).filter((s) => s.free).length;
+    // Prefer a day that still offers a choice. Late in the afternoon today can
+    // be down to its last hour, and opening on it makes a working salon look
+    // shut; a day with one hour left is only used if nothing better exists.
+    const any = days.findIndex((d) => free(d) >= 1);
+    const roomy = days.findIndex((d) => free(d) >= 2);
+    const want = dayPicked ? 1 : 2;
+    const first = want === 2 && roomy >= 0 ? roomy : any;
+    if (first >= 0 && free(days[dayIndex]) < want && free(days[first]) > free(days[dayIndex])) {
+      setDayIndex(first);
+    }
     setTime((current) =>
       current && slotsFor(days[dayIndex], pick).some((s) => s.free && s.time === current)
         ? current
         : null
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, master, dayIndex, days]);
+  }, [mounted, master, dayIndex, days, dayPicked]);
 
   // Changing direction can strand a master who does not work it.
   useEffect(() => {
@@ -474,6 +486,7 @@ export default function Booking() {
                                 disabled={closed}
                                 onClick={() => {
                                   setDayIndex(i);
+                                  setDayPicked(true);
                                   setTime(null);
                                 }}
                                 className={`min-w-[5.2rem] shrink-0 rounded-xl border px-3 py-3 text-center transition ${
