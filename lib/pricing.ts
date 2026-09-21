@@ -7,6 +7,7 @@
  *   R  = Rosi Style        https://rosistyle.bg/cenorazpis/
  *   V  = Студио ВИКИ       https://viki77.com/hair-price/
  *   O  = ONAYA, Казанлък   https://onaya.bg/pricelist/  (quoted in BGN)
+ *   S  = VS Style, София   https://www.friziora.com/ceni
  *
  * Durations are the salon's own scheduling, not a quoted figure — the salon
  * is invented, so how long it books for a service is part of the fiction.
@@ -34,6 +35,8 @@ export const DIRECTIONS: DirectionMeta[] = [
     items: [
       { slug: "zhensko", from: 20, to: 28, duration: 60 }, // R 20–25, V 23–28
       { slug: "mazhko", from: 8, duration: 30 }, // R 8
+      { slug: "mazhko-brada", from: 25, duration: 50 }, // S 25
+      { slug: "brada", from: 3, duration: 20 }, // R 2,50–3
       { slug: "pricheska", from: 107, duration: 90 }, // V 107
       { slug: "laminirane", from: 40, to: 50, duration: 90 }, // R 40–50
     ],

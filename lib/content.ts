@@ -68,10 +68,29 @@ const bg = {
     book: "Запазете час",
     menu: "Меню",
     close: "Затворете",
+    masters: "Майстори",
+    salon: "Салонът",
     otherLang: "EN",
   },
 
-  topbar: { tagline: "Избирате майстора, не салона" },
+
+  home: {
+    pick: "Изберете майстор",
+    open: "Вижте",
+    today: "днес",
+    tomorrow: "утре",
+  },
+
+  masterPage: {
+    years: (n: number) => `${n} години на стола`,
+    strengths: "Силен в",
+    teaches: (course: string) => `Води курса „${course}“`,
+    works: "Работи",
+    bookTitle: (name: string) => `Часовете на ${name.split(" ")[0]}`,
+    bookLead: "Изберете какво ще правим и кога. Часовете, които виждате, са свободни при този човек — не някъде в салона.",
+    reviews: (name: string) => `За ${name.split(" ")[0]}`,
+    others: "Другите четирима",
+  },
 
   status: {
     label: "Работно време",
@@ -81,30 +100,7 @@ const bg = {
     closedToday: "Днес почиваме",
   },
 
-  hero: {
-    badge: "Салон за красота · ул. „Шишман“, София",
-    title1: "Косата помни",
-    title2: "кой я е докоснал.",
-    lead: "ONDÉ е салон от петима майстори. Избирате човека, виждате цената и запазвате часа онлайн — за под минута, без обаждане.",
-    ctaBook: "Запазете час",
-    ctaPrices: "Вижте ценоразписа",
-    statRating: "от 186 отзива",
-    statMasters: "майстори",
-    statMastersValue: "5",
-    statYears: "на ул. „Шишман“",
-    statYearsValue: "7 г.",
-    instant: "Потвърждение веднага",
-    slotsTitle: "Свободни часове",
-    slotsChecking: "проверяваме наличността…",
-    slotsSoonest: (w: string) => `най-рано ${w}`,
-    today: "днес",
-    tomorrow: "утре",
-  },
 
-  marquee: [
-    "Подстригване", "Цвят", "Балеаж", "Кичури с фолио", "Ламиниране",
-    "Официална прическа", "Маникюр", "Микронидлинг", "Курсове",
-  ],
 
   directions: {
     eyebrow: "Направления",
@@ -128,6 +124,8 @@ const bg = {
         prices: [
           { title: "Дамско подстригване", note: "с измиване и оформяне" },
           { title: "Мъжко подстригване", note: "машинка и ножица" },
+          { title: "Мъжко подстригване с брада", note: "с оформяне и стайлинг" },
+          { title: "Оформяне на брада", note: "контур и бръснач" },
           { title: "Официална прическа", note: "за сватба, бал или снимки" },
           { title: "Ламиниране", note: "грижа, не цвят" },
         ],
@@ -182,6 +180,10 @@ const bg = {
     q3: "Кога Ви е удобно?",
     noSlots: "За този ден няма свободни часове. Изберете друг ден или ни се обадете.",
     closedDay: "В неделя салонът почива. Изберете друг ден.",
+    what: "Какво ще правим",
+    nothingPicked: "Изберете поне едно нещо",
+    again: "Ново записване",
+    demoNote: "Демонстрационен сайт. Часът не се записва никъде и никой не Ви търси.",
     q4: "Как да Ви потърсим?",
     yourName: "Вашето име",
     namePlaceholder: "Име и фамилия",
@@ -208,70 +210,7 @@ const bg = {
     months: ["януари", "февруари", "март", "април", "май", "юни", "юли", "август", "септември", "октомври", "ноември", "декември"],
   },
 
-  why: {
-    eyebrow: "Защо ONDÉ",
-    title1: "Салонът е сбор",
-    title2: "от пет ръце.",
-    badgeValue: "5",
-    badgeText: "майстори, всеки със собствен график",
-    items: [
-      {
-        title: "Часът е при човек, не при салон",
-        text: "Избирате майстора на втората стъпка и графикът се стеснява до неговия. Същият човек Ви поема и следващия път.",
-        icon: "user",
-      },
-      {
-        title: "Цената се вижда преди часа",
-        text: "Всяко направление носи своя ценоразпис. Точната сума се потвърждава от майстора, преди да започне работа.",
-        icon: "tag",
-      },
-      {
-        title: "Ценоразписът не Ви залива",
-        text: "Четири направления вместо сто реда в списък. Отваря се само това, което сте избрали.",
-        icon: "list",
-      },
-      {
-        title: "Курсовете са в същия салон",
-        text: "Обучението върви в работните часове, върху модели в залата — не в празно помещение след работно време.",
-        icon: "cap",
-      },
-    ],
-  },
 
-  team: {
-    eyebrow: "Майстори",
-    title: "Петима души. Всеки със свой график.",
-    lead: "Изберете човека, а не салона. Под всяко име стои неговият собствен календар.",
-    bookWith: (name: string) => `Запазете час при ${name}`,
-    leads: "Води курса",
-    members: [
-      {
-        name: "Ирина Вълчева",
-        role: "Главен стилист · цвят",
-        line: "Работи само с цвят. Балеаж, кичури и корекции след домашно боядисване.",
-      },
-      {
-        name: "Боряна Митева",
-        role: "Стилист · подстригване",
-        line: "Дамско подстригване и официални прически. Води курса по фризьорство.",
-      },
-      {
-        name: "Даниел Петков",
-        role: "Барбер",
-        line: "Мъжко подстригване с машинка и ножица, оформяне на брада.",
-      },
-      {
-        name: "Ния Стоянова",
-        role: "Ноктопластика",
-        line: "Маникюр с гел лак и с изграждане. Води курса по маникюр.",
-      },
-      {
-        name: "Елена Георгиева",
-        role: "Грим и грижа за кожата",
-        line: "Апаратни процедури за лицето и професионален грим. Води курса по грим.",
-      },
-    ],
-  },
 
   courses: {
     eyebrow: "Курсове",
@@ -339,74 +278,8 @@ const bg = {
     ],
   },
 
-  gallery: {
-    eyebrow: "Галерия",
-    title: "Работа, не каталог.",
-    lead: "Снимки от салона и от ръцете на майсторите.",
-    items: [
-      { caption: "Балеаж, дълга коса" },
-      { caption: "Дамско подстригване" },
-      { caption: "Цвят на корен" },
-      { caption: "Официална прическа" },
-      { caption: "Маникюр с гел лак" },
-      { caption: "Залата на ул. „Шишман“" },
-    ],
-  },
 
-  reviews: {
-    eyebrow: "Отзиви",
-    title1: "186 души",
-    title2: "се върнаха при същия майстор.",
-    ratingNote: "средна оценка от 186 отзива",
-    items: [
-      {
-        text: "Ходя при Ирина втора година. Носех ѝ коса, съсипана от домашно изрусяване, и тя ми каза честно, че ще трябват три посещения. Трябваха три.",
-        author: "Маргарита Д.",
-        meta: "цвят и балеаж",
-      },
-      {
-        text: "Запазих час в 23 часа от телефона, за събота сутрин, при конкретния човек. Без обаждания, без чакане да ми отговорят в Instagram.",
-        author: "Калина Н.",
-        meta: "дамско подстригване",
-      },
-      {
-        text: "Записах се на курса по маникюр, защото го водят в салона, докато той работи. Учиш върху истински клиенти, не върху пластмасова ръка.",
-        author: "Станимира В.",
-        meta: "курс по маникюр",
-      },
-    ],
-  },
 
-  faq: {
-    eyebrow: "Въпроси",
-    title: "Това, което хората питат най-често.",
-    items: [
-      {
-        q: "Мога ли да избера при кого да отида?",
-        a: "Да, и това е втората стъпка при записване. Щом изберете майстор, показваме само неговите свободни часове. Ако Ви е все едно, оставете „Всеки свободен“ и ще видите всички часове в салона.",
-      },
-      {
-        q: "Защо цените са в диапазон?",
-        a: "Защото дължината и състоянието на косата променят и времето, и материала. Диапазонът е честният отговор предварително. Точната сума Ви я казва майсторът, преди да започне работа.",
-      },
-      {
-        q: "Какво става, ако закъснея или не мога да дойда?",
-        a: "Обадете се. Ако предупредите поне два часа предварително, преместваме часа без условия. При закъснение над 15 минути може да се наложи да съкратим услугата, за да не изместим следващия клиент.",
-      },
-      {
-        q: "Работите ли в неделя?",
-        a: "Не. От понеделник до петък сме от 09:00 до 20:00, в събота — от 09:00 до 18:00. В неделя салонът почива.",
-      },
-      {
-        q: "Как се плаща?",
-        a: "В брой или с карта, след услугата. Цените са в евро, а левовата равностойност е по фиксирания курс 1 € = 1,95583 лв. и служи само за ориентир.",
-      },
-      {
-        q: "Курсовете издават ли документ?",
-        a: "Курсът по фризьорство завършва със Свидетелство за професионална квалификация. Курсовете по маникюр и по грим завършват с удостоверение от салона.",
-      },
-    ],
-  },
 
   contact: {
     eyebrow: "Контакти",
@@ -435,24 +308,13 @@ const bg = {
     colSalon: "Салонът",
     colContact: "Връзка",
     salon: ["Майстори", "Курсове", "Галерия", "Контакти"],
+    hoursLine: "Понеделник–петък 09:00–20:00 · събота 09:00–18:00 · неделя почиваме",
+    demoNote: "Демонстрационен сайт. Салонът е измислен.",
     madeBy: "Сайт от",
     demo: "Демонстрационен сайт. Салонът е измислен.",
   },
 
-  mobile: { call: "Обадете се", book: "Запазете час" },
 
-  assistant: {
-    open: "Асистент",
-    title: "Асистент на салона",
-    subtitle: "Отговаря веднага, по всяко време",
-    greeting: "Здравейте. Мога да помогна с цени, свободни часове, майстори и курсове. С какво да започнем?",
-    placeholder: "Напишете въпроса си…",
-    send: "Изпратете",
-    disclaimer: "Автоматичен асистент. Отговаря от данните на сайта.",
-    chips: ["Колко струва балеаж?", "Кой прави цвят?", "Работите ли в неделя?", "Искам час"],
-    fallback: "Не съм сигурен за това. Обадете се на {phone} или запазете час онлайн — ще Ви отговорим лично.",
-    typing: "пише…",
-  },
 };
 
 const en: typeof bg = {
@@ -471,10 +333,29 @@ const en: typeof bg = {
     book: "Book a chair",
     menu: "Menu",
     close: "Close",
+    masters: "Stylists",
+    salon: "The salon",
     otherLang: "BG",
   },
 
-  topbar: { tagline: "You pick the stylist, not the salon" },
+
+  home: {
+    pick: "Choose a stylist",
+    open: "See more",
+    today: "today",
+    tomorrow: "tomorrow",
+  },
+
+  masterPage: {
+    years: (n: number) => `${n} years in the chair`,
+    strengths: "Good at",
+    teaches: (course: string) => `Teaches “${course}”`,
+    works: "Work",
+    bookTitle: (name: string) => `${name.split(" ")[0]}'s hours`,
+    bookLead: "Pick what we are doing and when. This is their own diary — the hours you see are free with this person, not somewhere in the salon.",
+    reviews: (name: string) => `On ${name.split(" ")[0]}`,
+    others: "The other four",
+  },
 
   status: {
     label: "Opening hours",
@@ -484,30 +365,7 @@ const en: typeof bg = {
     closedToday: "Closed today",
   },
 
-  hero: {
-    badge: "Beauty salon · Shishman St, Sofia",
-    title1: "Hair remembers",
-    title2: "whose hands it met.",
-    lead: "ONDÉ is five stylists. You choose the person, you see the price, and you book online — in under a minute, without calling.",
-    ctaBook: "Book a chair",
-    ctaPrices: "See the price list",
-    statRating: "from 186 reviews",
-    statMasters: "stylists",
-    statMastersValue: "5",
-    statYears: "on Shishman St",
-    statYearsValue: "7 yrs",
-    instant: "Confirmed instantly",
-    slotsTitle: "Available times",
-    slotsChecking: "checking availability…",
-    slotsSoonest: (w: string) => `earliest ${w}`,
-    today: "today",
-    tomorrow: "tomorrow",
-  },
 
-  marquee: [
-    "Cutting", "Colour", "Balayage", "Foil highlights", "Lamination",
-    "Occasion styling", "Manicure", "Microneedling", "Courses",
-  ],
 
   directions: {
     eyebrow: "Services",
@@ -531,6 +389,8 @@ const en: typeof bg = {
         prices: [
           { title: "Women's cut", note: "wash and blow-dry included" },
           { title: "Men's cut", note: "clipper and scissors" },
+          { title: "Men's cut with beard", note: "shaped and styled" },
+          { title: "Beard shaping", note: "outline and razor" },
           { title: "Occasion styling", note: "weddings, proms, shoots" },
           { title: "Lamination", note: "care, not colour" },
         ],
@@ -585,6 +445,10 @@ const en: typeof bg = {
     q3: "When suits you?",
     noSlots: "No free times on this day. Pick another day or give us a call.",
     closedDay: "The salon is closed on Sunday. Please pick another day.",
+    what: "What are we doing",
+    nothingPicked: "Pick at least one thing",
+    again: "Book again",
+    demoNote: "Demonstration site. Nothing is stored and nobody will call you.",
     q4: "How do we reach you?",
     yourName: "Your name",
     namePlaceholder: "First and last name",
@@ -611,70 +475,7 @@ const en: typeof bg = {
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   },
 
-  why: {
-    eyebrow: "Why ONDÉ",
-    title1: "The salon is the sum",
-    title2: "of five pairs of hands.",
-    badgeValue: "5",
-    badgeText: "stylists, each with their own diary",
-    items: [
-      {
-        title: "You book a person, not a salon",
-        text: "You choose the stylist on the second step and the diary narrows to theirs. The same person takes you next time too.",
-        icon: "user",
-      },
-      {
-        title: "The price is visible beforehand",
-        text: "Every direction carries its own price list. The exact figure is confirmed by your stylist before any work starts.",
-        icon: "tag",
-      },
-      {
-        title: "The price list doesn't drown you",
-        text: "Four directions instead of a hundred rows in a list. Only the one you picked opens.",
-        icon: "list",
-      },
-      {
-        title: "The courses run in this salon",
-        text: "Teaching happens during working hours, on models in the room — not in an empty space after closing.",
-        icon: "cap",
-      },
-    ],
-  },
 
-  team: {
-    eyebrow: "Stylists",
-    title: "Five people. Five separate diaries.",
-    lead: "Choose the person, not the salon. Under every name sits that person's own calendar.",
-    bookWith: (name: string) => `Book with ${name}`,
-    leads: "Teaches",
-    members: [
-      {
-        name: "Irina Valcheva",
-        role: "Lead stylist · colour",
-        line: "Works with colour only. Balayage, highlights and repairs after home bleaching.",
-      },
-      {
-        name: "Boryana Miteva",
-        role: "Stylist · cutting",
-        line: "Women's cutting and occasion styling. Teaches the hairdressing course.",
-      },
-      {
-        name: "Daniel Petkov",
-        role: "Barber",
-        line: "Men's cutting with clipper and scissors, beard shaping.",
-      },
-      {
-        name: "Niya Stoyanova",
-        role: "Nail technician",
-        line: "Gel polish and extensions. Teaches the manicure course.",
-      },
-      {
-        name: "Elena Georgieva",
-        role: "Make-up and skin",
-        line: "Device treatments for the face and professional make-up. Teaches the make-up course.",
-      },
-    ],
-  },
 
   courses: {
     eyebrow: "Courses",
@@ -742,74 +543,8 @@ const en: typeof bg = {
     ],
   },
 
-  gallery: {
-    eyebrow: "Gallery",
-    title: "The work, not a catalogue.",
-    lead: "Photographs from the salon and from the stylists' hands.",
-    items: [
-      { caption: "Balayage, long hair" },
-      { caption: "Women's cut" },
-      { caption: "Root colour" },
-      { caption: "Occasion styling" },
-      { caption: "Gel polish manicure" },
-      { caption: "The room on Shishman St" },
-    ],
-  },
 
-  reviews: {
-    eyebrow: "Reviews",
-    title1: "186 people",
-    title2: "came back to the same stylist.",
-    ratingNote: "average from 186 reviews",
-    items: [
-      {
-        text: "I've been going to Irina for two years. I brought her hair ruined by home bleaching and she told me honestly it would take three visits. It took three.",
-        author: "Margarita D.",
-        meta: "colour and balayage",
-      },
-      {
-        text: "I booked at 11pm from my phone, for Saturday morning, with the exact person I wanted. No phone calls, no waiting for a reply on Instagram.",
-        author: "Kalina N.",
-        meta: "women's cut",
-      },
-      {
-        text: "I took the manicure course because they teach it in the salon while it's open. You learn on real clients, not on a plastic hand.",
-        author: "Stanimira V.",
-        meta: "manicure course",
-      },
-    ],
-  },
 
-  faq: {
-    eyebrow: "Questions",
-    title: "What people ask most often.",
-    items: [
-      {
-        q: "Can I choose who sees me?",
-        a: "Yes — that's the second step when booking. Once you pick a stylist we show only their free hours. If you don't mind who, leave it on \"Anyone free\" and you'll see every hour in the salon.",
-      },
-      {
-        q: "Why are the prices given as a range?",
-        a: "Because length and condition change both the time and the product. A range is the honest answer in advance. The exact figure comes from your stylist before any work starts.",
-      },
-      {
-        q: "What if I'm late or can't make it?",
-        a: "Call us. Give us at least two hours' notice and we move the appointment with no conditions. If you're more than 15 minutes late we may have to shorten the service so the next client isn't pushed back.",
-      },
-      {
-        q: "Are you open on Sunday?",
-        a: "No. Monday to Friday we're open 09:00 to 20:00, Saturday 09:00 to 18:00. The salon is closed on Sunday.",
-      },
-      {
-        q: "How do I pay?",
-        a: "Cash or card, after the service. Prices are in euro, and the lev equivalent uses the fixed rate €1 = BGN 1.95583 for reference only.",
-      },
-      {
-        q: "Do the courses come with a certificate?",
-        a: "The hairdressing course ends with a state certificate of professional qualification. The manicure and make-up courses end with a certificate from the salon.",
-      },
-    ],
-  },
 
   contact: {
     eyebrow: "Contact",
@@ -838,24 +573,13 @@ const en: typeof bg = {
     colSalon: "The salon",
     colContact: "Contact",
     salon: ["Stylists", "Courses", "Gallery", "Contact"],
+    hoursLine: "Monday–Friday 09:00–20:00 · Saturday 09:00–18:00 · closed Sunday",
+    demoNote: "Demonstration site. The salon is invented.",
     madeBy: "Site by",
     demo: "Demonstration site. The salon is invented.",
   },
 
-  mobile: { call: "Call", book: "Book" },
 
-  assistant: {
-    open: "Assistant",
-    title: "Salon assistant",
-    subtitle: "Answers instantly, any time",
-    greeting: "Hello. I can help with prices, free times, stylists and courses. Where shall we start?",
-    placeholder: "Type your question…",
-    send: "Send",
-    disclaimer: "Automated assistant. It answers from what is on this site.",
-    chips: ["How much is balayage?", "Who does colour?", "Are you open on Sunday?", "I'd like a booking"],
-    fallback: "I'm not sure about that one. Call {phone} or book online and we'll answer in person.",
-    typing: "typing…",
-  },
 };
 
 export type Content = typeof bg;

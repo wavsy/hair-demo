@@ -34,20 +34,34 @@ const PAGE = 24;
  * empty. Each query is tried in turn until one returns something usable.
  */
 const SLOTS = [
-  { file: "hero.jpg", qs: ["hair salon", "hairstyle", "hair"], note: "Hero — the room and the work" },
-  { file: "salon.jpg", qs: ["salon", "barber", "mirror"], note: "Why ONDÉ — the room" },
+  { file: "salon.jpg", qs: ["salon", "barber", "mirror"], note: "The room" },
   { file: "og.jpg", qs: ["haircut", "hairdresser", "hair"], note: "Open Graph card" },
-  { file: "master-1.jpg", qs: ["hairdresser", "hairstylist", "hair"], note: "Irina — colour" },
-  { file: "master-2.jpg", qs: ["haircut", "hairstyle", "hair"], note: "Boryana — cutting" },
-  { file: "master-3.jpg", qs: ["barber", "barbershop", "beard"], note: "Daniel — barber" },
-  { file: "master-4.jpg", qs: ["manicure", "nails"], note: "Niya — nails" },
-  { file: "master-5.jpg", qs: ["makeup artist", "makeup"], note: "Elena — make-up and skin" },
-  { file: "gallery-1.jpg", qs: ["blonde hair", "long hair", "hair"], note: "Balayage, long hair" },
-  { file: "gallery-2.jpg", qs: ["haircut", "scissors", "hair"], note: "Women's cut" },
-  { file: "gallery-3.jpg", qs: ["hair colour", "hair dye", "hair"], note: "Root colour" },
-  { file: "gallery-4.jpg", qs: ["updo", "bride hair", "hairstyle"], note: "Occasion styling" },
-  { file: "gallery-5.jpg", qs: ["gel nails", "nails"], note: "Gel polish manicure" },
-  { file: "gallery-6.jpg", qs: ["salon chair", "mirror", "salon"], note: "The room" },
+
+  { file: "master-1.jpg", qs: ["woman portrait", "hairstylist"], note: "Ирина — портрет" },
+  { file: "master-2.jpg", qs: ["woman portrait", "hairdresser"], note: "Боряна — портрет" },
+  { file: "master-3.jpg", qs: ["man portrait", "smiling man"], note: "Даниел — портрет" },
+  { file: "master-4.jpg", qs: ["woman portrait", "curly hair"], note: "Ния — портрет" },
+  { file: "master-5.jpg", qs: ["woman portrait", "beauty"], note: "Елена — портрет" },
+
+  { file: "work-irina-1.jpg", qs: ["balayage", "blonde hair", "hair"], note: "Ирина — работа" },
+  { file: "work-irina-2.jpg", qs: ["hair dye", "hair color", "colored hair"], note: "Ирина — работа" },
+  { file: "work-irina-3.jpg", qs: ["ombre hair", "long hair", "hairstyle"], note: "Ирина — работа" },
+
+  { file: "work-boryana-1.jpg", qs: ["haircut", "scissors hair"], note: "Боряна — работа" },
+  { file: "work-boryana-2.jpg", qs: ["updo", "hair bun", "wedding hair"], note: "Боряна — работа" },
+  { file: "work-boryana-3.jpg", qs: ["curly hair", "short hair", "hairstyle"], note: "Боряна — работа" },
+
+  { file: "work-daniel-1.jpg", qs: ["barber", "barbershop"], note: "Даниел — работа" },
+  { file: "work-daniel-2.jpg", qs: ["beard", "shaving", "razor"], note: "Даниел — работа" },
+  { file: "work-daniel-3.jpg", qs: ["men haircut", "barber chair", "barber"], note: "Даниел — работа" },
+
+  { file: "work-niya-1.jpg", qs: ["manicure", "nails"], note: "Ния — работа" },
+  { file: "work-niya-2.jpg", qs: ["nail polish", "gel nails", "nails"], note: "Ния — работа" },
+  { file: "work-niya-3.jpg", qs: ["pedicure", "feet nails", "nails"], note: "Ния — работа" },
+
+  { file: "work-elena-1.jpg", qs: ["facial", "face mask", "skincare"], note: "Елена — работа" },
+  { file: "work-elena-2.jpg", qs: ["skincare", "serum", "beauty face"], note: "Елена — работа" },
+  { file: "work-elena-3.jpg", qs: ["eyebrows", "makeup eyes", "makeup"], note: "Елена — работа" },
 ];
 
 const force = process.argv.includes("--force");

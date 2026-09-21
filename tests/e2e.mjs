@@ -2,10 +2,12 @@
  * End-to-end checks against a running server.
  *   npm run build && npm start   (then)   npm run test:e2e
  * Uses a Chrome already on the machine — no browser download.
+ *
+ * Against the live site:  E2E_URL=https://… npm run test:e2e
  */
 import { chromium } from "playwright-core";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { after, test } from "node:test";
 
 const BASE = process.env.E2E_URL ?? "http://localhost:3000";
 const CHROME =
@@ -14,227 +16,192 @@ const CHROME =
 let browser;
 const open = async (path = "/", viewport = { width: 1280, height: 900 }) => {
   browser ??= await chromium.launch({ executablePath: CHROME, args: ["--hide-scrollbars"] });
-  const ctx = await browser.newContext({ viewport, acceptDownloads: true });
+  const ctx = await browser.newContext({ viewport });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(BASE + path, { waitUntil: "networkidle" });
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(700);
   return { page, ctx, errors };
 };
 
-/** The four cards and the list they open — never the copy of it inside booking. */
-const directions = (page) => page.locator("#napravleniya");
-/** The panel that opens under the four cards, never the cards' own copy. */
-const priceList = (page) => page.locator("#pricelist");
-const bookingForm = (page) => page.locator("#chas");
+after(async () => {
+  await browser?.close();
+});
 
-/** Opens the hair price list and ticks the two cheapest lines. */
-const pickTwoHairServices = async (page) => {
-  await directions(page).getByRole("button", { name: /Коса/ }).first().click();
-  await priceList(page).getByRole("button", { name: /Дамско подстригване/ }).click();
-  await priceList(page).getByRole("button", { name: /Мъжко подстригване/ }).click();
+const booking = (page) => page.locator("#chas");
+
+/** Ticks the first `n` service lines on a master's page. */
+const pickServices = async (page, n = 1) => {
+  const lines = booking(page).locator("ul button");
+  for (let i = 0; i < n; i++) await lines.nth(i).click();
 };
 
-test("the Bulgarian page renders without a script error", async () => {
+/** Picks the first free hour that is offered. */
+const pickFirstHour = async (page) => {
+  const hour = booking(page)
+    .locator("button")
+    .filter({ hasText: /^\d\d:\d\d$/ })
+    .first();
+  await hour.click();
+  return (await hour.textContent()).trim();
+};
+
+test("the home page is five faces and nothing else", async () => {
   const { page, ctx, errors } = await open("/");
+  const faces = page.locator('section[aria-label] a[href^="/maistori/"]');
+  assert.equal(await faces.count(), 5, "the home page should offer exactly five people");
+  // No section rhythm: the salon's own words do not appear above the faces.
+  assert.equal(await page.locator("main section").count(), 1);
   assert.deepEqual(errors, []);
-  assert.match(await page.title(), /ONDÉ/);
-  assert.equal(await page.evaluate(() => document.documentElement.lang), "bg");
   await ctx.close();
 });
 
-test("the English page renders and switches the document language", async () => {
-  const { page, ctx, errors } = await open("/en");
-  assert.deepEqual(errors, []);
-  assert.equal(await page.evaluate(() => document.documentElement.lang), "en");
-  await ctx.close();
-});
-
-test("no section is left invisible after scrolling the whole page", async () => {
+test("clicking a face opens that person's page", async () => {
   const { page, ctx } = await open("/");
-  const height = await page.evaluate(() => document.documentElement.scrollHeight);
-  for (let y = 0; y < height; y += 600) {
-    await page.evaluate((v) => window.scrollTo(0, v), y);
-    await page.waitForTimeout(70);
+  await page.locator('a[href="/maistori/boryana"]').click();
+  await page.waitForURL(/\/maistori\/boryana$/);
+  await assert.doesNotReject(page.getByRole("heading", { name: "Боряна Митева" }).waitFor());
+  await ctx.close();
+});
+
+test("a master is only offered the work they actually do", async () => {
+  const { page, ctx } = await open("/maistori/irina");
+  const menu = await booking(page).locator("ul button").allInnerTexts();
+  assert.ok(menu.length > 0, "Irina offers nothing");
+  for (const line of menu) {
+    assert.doesNotMatch(
+      line,
+      /подстригване|прическа/i,
+      `Irina says she does not cut, but is offered: ${line}`
+    );
   }
-  await page.waitForTimeout(900);
-  const hidden = await page.evaluate(
-    () =>
-      [...document.querySelectorAll(".reveal")].filter((el) => getComputedStyle(el).opacity === "0")
-        .length
-  );
-  assert.equal(hidden, 0, `${hidden} revealed blocks stayed invisible`);
   await ctx.close();
 });
 
-test("the price list stays shut until a direction is asked for", async () => {
-  const { page, ctx } = await open("/");
-  const row = priceList(page).getByRole("button", { name: /Официална прическа/ });
-  assert.equal(await row.isVisible(), false, "the price list was open before anyone asked");
-  await directions(page).getByRole("button", { name: /Коса/ }).first().click();
-  await page.waitForTimeout(600);
-  assert.ok(await row.isVisible(), "the price list did not open");
+test("two masters do not show the same list", async () => {
+  const a = await open("/maistori/irina");
+  const irina = await booking(a.page).locator("ul button").allInnerTexts();
+  await a.ctx.close();
+  const b = await open("/maistori/daniel");
+  const daniel = await booking(b.page).locator("ul button").allInnerTexts();
+  await b.ctx.close();
+  assert.notDeepEqual(irina, daniel, "every master is showing the whole salon's price list");
+});
+
+test("booking runs end to end on a master's own page", async () => {
+  const { page, ctx, errors } = await open("/maistori/niya");
+  await pickServices(page, 2);
+  const hour = await pickFirstHour(page);
+  assert.match(hour, /^\d\d:\d\d$/);
+
+  await booking(page).getByPlaceholder("Име и фамилия").fill("Тест Тестов");
+  await booking(page).getByPlaceholder("08XX XXX XXX").fill("0888 123 456");
+  await booking(page).getByRole("button", { name: /Потвърдете часа/ }).click();
+
+  await assert.doesNotReject(page.getByText("Часът е запазен.").waitFor({ timeout: 8000 }));
+  const card = await booking(page).innerText();
+  assert.ok(card.includes("Ния Стоянова"), "the confirmation does not name the master");
+  assert.ok(card.includes(hour), "the confirmation does not carry the hour that was chosen");
+  assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-test("only one direction's price list is open at a time", async () => {
-  const { page, ctx } = await open("/");
-  await directions(page).getByRole("button", { name: /Коса/ }).first().click();
-  await page.waitForTimeout(500);
-  await directions(page).getByRole("button", { name: /Нокти/ }).first().click();
-  await page.waitForTimeout(600);
-  assert.equal(
-    await priceList(page).getByRole("button", { name: /Официална прическа/ }).isVisible(),
-    false,
-    "the hair list stayed open under the nails list"
-  );
-  assert.ok(await priceList(page).getByRole("button", { name: /Маникюр с гел лак/ }).isVisible());
+test("the running total appears only once something is chosen", async () => {
+  const { page, ctx } = await open("/maistori/niya");
+  // innerText applies text-transform, and the label is rendered in caps.
+  assert.match(await booking(page).innerText(), /изберете поне едно нещо/i);
+  await pickServices(page, 1);
+  assert.match(await booking(page).innerText(), /\d+ €/);
   await ctx.close();
 });
 
-test("the calculator adds the chosen lines and carries them into booking", async () => {
-  const { page, ctx } = await open("/");
-  await pickTwoHairServices(page);
-  // A range (20–28 €) plus a single price (8 €) still reads as one range.
-  await directions(page).locator("text=/^28 – 36 €$/").first().waitFor({ timeout: 4000 });
-  await page.getByRole("button", { name: /Запазете час за това/ }).click();
-  await page.waitForTimeout(900);
-  await assert.doesNotReject(
-    page.getByRole("heading", { name: /При кого/ }).waitFor({ timeout: 4000 })
-  );
-  await ctx.close();
-});
-
-test("booking runs end to end and hands over a calendar file", async () => {
-  const { page, ctx } = await open("/");
-  await pickTwoHairServices(page);
-  await page.getByRole("button", { name: /Запазете час за това/ }).click();
-  await page.waitForTimeout(900);
-  await bookingForm(page).getByRole("button", { name: "Напред" }).click();
-  await page.waitForTimeout(600);
-  await bookingForm(page).locator("button:not([disabled])", { hasText: /^\d\d:\d\d$/ }).nth(1).click();
-  await bookingForm(page).getByRole("button", { name: "Напред" }).click();
-  await page.getByPlaceholder("Име и фамилия").fill("Иван Петров");
-  await page.getByPlaceholder("08XX XXX XXX").fill("0888 123 456");
-  await page.getByRole("button", { name: /Потвърдете часа/ }).click();
-  await page.getByRole("heading", { name: /Часът е запазен/ }).waitFor({ timeout: 4000 });
-
-  const [download] = await Promise.all([
-    page.waitForEvent("download", { timeout: 8000 }),
-    page.getByRole("button", { name: /Добавете в календара/ }).click(),
-  ]);
-  const fs = await import("node:fs");
-  const ics = fs.readFileSync(await download.path(), "utf8");
-  assert.match(ics, /BEGIN:VCALENDAR/);
-  assert.match(ics, /DTSTART;TZID=Europe\/Sofia:\d{8}T\d{6}/);
-  assert.match(ics, /TRIGGER:-PT2H/);
-  assert.match(ics, /SUMMARY:ONDÉ/);
-  await ctx.close();
-});
-
-test("a time that has already passed cannot be selected", async () => {
-  const { page, ctx } = await open("/");
-  await pickTwoHairServices(page);
-  await page.getByRole("button", { name: /Запазете час за това/ }).click();
-  await page.waitForTimeout(900);
-  await bookingForm(page).getByRole("button", { name: "Напред" }).click();
-  await page.waitForTimeout(600);
-  const today = page.getByRole("button", { name: /днес/ }).first();
-  if (await today.isEnabled()) {
+test("an hour that has already passed is never offered", async () => {
+  const { page, ctx } = await open("/maistori/daniel");
+  const today = booking(page).locator("button").filter({ hasText: /ДНЕС|днес/i }).first();
+  if (await today.isEnabled().catch(() => false)) {
     await today.click();
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(500);
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
-    const bookable = await page.evaluate(() =>
-      [...document.querySelectorAll("button")]
-        .filter((b) => /^\d\d:\d\d$/.test(b.textContent?.trim() ?? "") && !b.disabled)
-        .map((b) => b.textContent.trim())
-    );
-    for (const time of bookable) {
-      const min = Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
-      assert.ok(min > nowMin, `${time} is offered but has passed`);
+    const hours = await booking(page)
+      .locator("button")
+      .filter({ hasText: /^\d\d:\d\d$/ })
+      .allInnerTexts();
+    for (const h of hours) {
+      const min = Number(h.slice(0, 2)) * 60 + Number(h.slice(3));
+      assert.ok(min > nowMin, `${h} is offered but has already passed`);
     }
   }
   await ctx.close();
 });
 
 test("Sunday cannot be booked, because the salon is shut", async () => {
-  const { page, ctx } = await open("/");
-  await pickTwoHairServices(page);
-  await page.getByRole("button", { name: /Запазете час за това/ }).click();
-  await page.waitForTimeout(900);
-  await bookingForm(page).getByRole("button", { name: "Напред" }).click();
-  await page.waitForTimeout(600);
-  const sundays = bookingForm(page).locator('button:has-text("нед")');
-  const count = await sundays.count();
-  assert.ok(count > 0, "no Sunday appeared in the twelve days on offer");
+  const { page, ctx } = await open("/maistori/elena");
+  const strip = booking(page).locator("button").filter({ hasText: /^(нед|ДНЕС|УТРЕ|[а-я]{2,4})\s*\d+$/i });
+  const count = await strip.count();
+  let checked = 0;
   for (let i = 0; i < count; i++) {
-    assert.equal(await sundays.nth(i).isEnabled(), false, "a Sunday was bookable");
+    const label = (await strip.nth(i).innerText()).toLowerCase();
+    if (label.startsWith("нед")) {
+      assert.ok(await strip.nth(i).isDisabled(), "Sunday is offered, but the salon is shut");
+      checked++;
+    }
   }
+  assert.ok(checked > 0, "no Sunday appeared in the next twelve days");
   await ctx.close();
 });
 
-test('"book with" on a stylist carries that person into the form', async () => {
-  const { page, ctx } = await open("/");
-  await page.getByRole("button", { name: /Запазете час при Ирина/ }).click();
-  await page.waitForTimeout(900);
-  // Irina works colour, so booking opens on the colour list, not the hair one.
-  await bookingForm(page).getByRole("button", { name: /Боядисване на корен/ }).click();
-  await bookingForm(page).getByRole("button", { name: "Напред" }).click();
-  await page.waitForTimeout(500);
-  const hint = await page.locator("text=/Показваме само часовете/").first().innerText();
-  assert.match(hint, /Ирина Вълчева/);
+test("the language switch keeps you on the same person", async () => {
+  const { page, ctx } = await open("/maistori/elena");
+  await page.locator('header a[hreflang="en"]').click();
+  await page.waitForURL(/\/en\/stylists\/elena$/);
+  await assert.doesNotReject(page.getByRole("heading", { name: "Elena Georgieva" }).waitFor());
+  assert.equal(await page.locator("html").getAttribute("lang"), "en");
   await ctx.close();
 });
 
-test("a course can be enrolled in online, with a date and places left", async () => {
-  const { page, ctx } = await open("/");
-  const card = page.locator("#kursove article", { hasText: "Фризьорство" }).first();
-  await card.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
-  assert.match(await card.innerText(), /остават \d+ мяст|места|Няма свободни места/);
-  await card.getByRole("button", { name: /Запишете се/ }).click();
+test("a course can be enrolled in, with a date and places left", async () => {
+  const { page, ctx, errors } = await open("/kursove");
+  const body = await page.locator("main").innerText();
+  assert.match(body, /остават \d+ мяст|Няма свободни места/);
+  assert.match(body, /€/);
+  await page.getByRole("button", { name: /Запишете се/ }).first().click();
   await page.waitForTimeout(400);
-  await card.getByPlaceholder("Име и фамилия").fill("Мария Иванова");
-  await card.getByPlaceholder("08XX XXX XXX").fill("0888 222 333");
-  await card.getByRole("button", { name: /Запишете се/ }).click();
-  await page.waitForTimeout(600);
-  assert.match(await card.innerText(), /Мястото е запазено/);
+  // The panel that just opened. It carries a hook, because picking it out by
+  // shape is brittle: the other cards still show their own "Запишете се".
+  const panel = page.locator("[data-enrol]");
+  await panel.getByPlaceholder("Име и фамилия").fill("Тест Тестов");
+  await panel.getByPlaceholder("08XX XXX XXX").fill("0888 123 456");
+  await panel.getByRole("button", { name: /Запишете се/ }).click();
+  await assert.doesNotReject(page.getByText("Мястото е запазено.").waitFor({ timeout: 8000 }));
+  assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-test("the assistant answers in the language of the page", async () => {
-  const { page, ctx } = await open("/en");
-  await page.getByRole("button", { name: /Assistant/ }).click();
-  await page.getByPlaceholder(/Type your question/).fill("how much is balayage");
-  await page.keyboard.press("Enter");
-  await page.waitForTimeout(2600);
-  const text = await page.locator(".pop-in").last().innerText();
-  assert.match(text, /€/);
-  assert.ok(!/[а-я]/.test(text), "Bulgarian text leaked into the English assistant");
+test("the salon page carries the hours and a map that loads", async () => {
+  const { page, ctx } = await open("/salona");
+  const body = await page.locator("main").innerText();
+  assert.match(body, /Понеделник/);
+  assert.match(body, /почивен ден/);
+  const map = page.locator("iframe");
+  assert.equal(await map.count(), 1);
+  assert.match(await map.getAttribute("src"), /openstreetmap\.org/);
   await ctx.close();
 });
 
-test("the assistant names a stylist when asked who does the work", async () => {
-  const { page, ctx } = await open("/");
-  await page.getByRole("button", { name: /Асистент/ }).click();
-  await page.getByPlaceholder(/Напишете въпроса/).fill("кой прави цвят");
-  await page.keyboard.press("Enter");
-  await page.waitForTimeout(2600);
-  const text = await page.locator(".pop-in").last().innerText();
-  assert.match(text, /Ирина Вълчева/);
+test("the QR page still points at the live address", async () => {
+  const { page, ctx, errors } = await open("/qr");
+  assert.match(await page.locator("body").innerText(), /onde-salon\.vercel\.app/);
+  assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-test("the language switch keeps the visitor on the site", async () => {
-  const { page, ctx } = await open("/");
-  await page.getByRole("link", { name: "EN" }).first().click();
-  await page.waitForURL("**/en");
-  assert.match(page.url(), /\/en$/);
-  await ctx.close();
-});
-
-test.after(async () => {
-  await browser?.close();
+test("every page renders in English too", async () => {
+  for (const path of ["/en", "/en/stylists/irina", "/en/courses", "/en/the-salon"]) {
+    const { page, ctx, errors } = await open(path);
+    assert.equal(await page.locator("html").getAttribute("lang"), "en", `${path} is not in English`);
+    assert.deepEqual(errors, [], `${path} threw`);
+    await ctx.close();
+  }
 });

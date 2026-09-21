@@ -43,7 +43,9 @@ export default function Logo({
             {name}
           </span>
           <span
-            className={`mt-1.5 block text-[9px] font-medium uppercase tracking-[0.26em] ${
+            // Hidden on a narrow screen: at 390px it wraps onto two lines and
+            // walks into the navigation.
+            className={`mt-1.5 hidden text-[9px] font-medium uppercase tracking-[0.26em] sm:block ${
               light ? "text-muted" : "text-ink/55"
             }`}
           >

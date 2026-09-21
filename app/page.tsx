@@ -1,5 +1,10 @@
-import Site from "@/components/Site";
+import Faces from "@/components/Faces";
+import Shell from "@/components/Shell";
 
 export default function Home() {
-  return <Site lang="bg" />;
+  return (
+    <Shell lang="bg" page={{ kind: "home" }}>
+      <Faces />
+    </Shell>
+  );
 }

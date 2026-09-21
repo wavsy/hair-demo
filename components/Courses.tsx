@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Icon from "./Icon";
 import Photo from "./Photo";
-import { icsFile } from "./Booking";
 import { useI18n } from "./I18n";
-import { MASTER_META, priceLabel } from "@/lib/content";
+import { priceLabel } from "@/lib/content";
+import { MASTERS, masterCopy } from "@/lib/masters";
 import { COURSES } from "@/lib/pricing";
 import { intakesFor } from "@/lib/courses";
 
@@ -33,34 +33,11 @@ export default function Courses() {
   );
 
   const teacherFor = (courseIndex: number) =>
-    MASTER_META.findIndex((m) => m.course === courseIndex);
+    MASTERS.findIndex((m) => m.course === courseIndex);
 
   const dateLabel = (d: Date) =>
     `${d.getDate()} ${t.booking.months[d.getMonth()]} ${d.getFullYear()}`;
 
-  const download = (courseIndex: number, date: Date) => {
-    const blob = new Blob(
-      [
-        icsFile({
-          date,
-          time: "10:00",
-          minutes: 180,
-          summary: c.icsSummary(c.items[courseIndex].title),
-          description: `${c.items[courseIndex].title} · ${t.address}`,
-          phoneLabel: t.booking.icsPhone,
-          alarm: c.icsSummary(c.items[courseIndex].title),
-          location: t.address,
-        }),
-      ],
-      { type: "text/calendar;charset=utf-8" }
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "onde-kurs.ics";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const canSend = name.trim().length > 1 && phone.trim().length > 5;
 
@@ -88,7 +65,7 @@ export default function Courses() {
             return (
               <article
                 key={item.title}
-                className="reveal grid gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-[1.4fr_1fr]"
+                className="reveal grid gap-px overflow-hidden border border-line bg-line lg:grid-cols-[1.4fr_1fr]"
               >
                 <div className="bg-ink p-7 sm:p-10">
                   <div className="flex flex-wrap items-baseline gap-4">
@@ -142,12 +119,12 @@ export default function Courses() {
                 <div className="flex flex-col bg-ink-3 p-7 sm:p-10">
                   {teacher >= 0 && (
                     <div className="flex items-center gap-4 border-b border-line pb-6">
-                      <span className="relative size-12 shrink-0 overflow-hidden rounded-full">
+                      <span className="relative size-12 shrink-0 overflow-hidden ">
                         <Photo
-                          src={MASTER_META[teacher].photo}
-                          alt={t.team.members[teacher].name}
+                          src={MASTERS[teacher].photo}
+                          alt={masterCopy(lang, teacher).name}
                           sizes="48px"
-                          label={t.team.members[teacher].name}
+                          label={masterCopy(lang, teacher).name}
                           className="object-cover grayscale"
                         />
                       </span>
@@ -156,7 +133,7 @@ export default function Courses() {
                           {c.leadBy}
                         </span>
                         <span className="mt-1 block text-[15px] font-light text-bone">
-                          {t.team.members[teacher].name}
+                          {masterCopy(lang, teacher).name}
                         </span>
                       </span>
                     </div>
@@ -174,7 +151,7 @@ export default function Courses() {
 
                   {enrolled === ci ? (
                     <div className="pop-in flex-1 py-8 text-center">
-                      <span className="check-ring mx-auto grid size-14 place-items-center rounded-full border border-accent text-accent">
+                      <span className="check-ring mx-auto grid size-14 place-items-center border border-accent text-accent">
                         <svg viewBox="0 0 48 48" className="size-7" fill="none" aria-hidden="true">
                           <path
                             className="check-path"
@@ -188,18 +165,9 @@ export default function Courses() {
                       </span>
                       <h4 className="display mt-5 text-2xl text-bone">{c.doneTitle}</h4>
                       <p className="mt-2 text-[14px] font-light text-muted">{c.doneLead(phone)}</p>
-                      {open && (
-                        <button
-                          onClick={() => download(ci, open.date)}
-                          className="mt-6 inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-[13px] font-light text-bone transition hover:border-accent hover:text-accent"
-                        >
-                          <Icon name="calendar" className="size-4" />
-                          {c.addCalendar}
-                        </button>
-                      )}
                     </div>
                   ) : enrolling === ci ? (
-                    <div className="step-in flex-1 py-6">
+                    <div data-enrol className="step-in flex-1 py-6">
                       <h4 className="text-[15px] font-light text-bone">
                         {c.enrollTitle(item.title)}
                       </h4>
@@ -214,7 +182,7 @@ export default function Courses() {
                           onChange={(e) => setName(e.target.value)}
                           placeholder={t.booking.namePlaceholder}
                           aria-label={t.booking.yourName}
-                          className="w-full rounded-xl border border-line bg-ink px-4 py-3.5 text-[15px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
+                          className="w-full border border-line bg-ink px-4 py-3.5 text-[15px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
                         />
                         <input
                           value={phone}
@@ -222,20 +190,20 @@ export default function Courses() {
                           inputMode="tel"
                           placeholder={t.booking.phonePlaceholder}
                           aria-label={t.booking.phone}
-                          className="w-full rounded-xl border border-line bg-ink px-4 py-3.5 text-[15px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
+                          className="w-full border border-line bg-ink px-4 py-3.5 text-[15px] font-light text-bone outline-none transition placeholder:text-muted/40 focus:border-accent"
                         />
                       </div>
                       <div className="mt-5 flex gap-2">
                         <button
                           disabled={!canSend}
                           onClick={() => setEnrolled(ci)}
-                          className="flex-1 rounded-full bg-bone px-5 py-3.5 text-[14px] font-medium text-ink transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:bg-ink-2 disabled:text-muted/40"
+                          className="flex-1 bg-bone px-5 py-3.5 text-[14px] font-medium text-ink transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:bg-ink-2 disabled:text-muted/40"
                         >
                           {c.enroll}
                         </button>
                         <button
                           onClick={() => setEnrolling(null)}
-                          className="rounded-full border border-line px-5 py-3.5 text-[14px] font-light text-muted transition hover:text-bone"
+                          className=" border border-line px-5 py-3.5 text-[14px] font-light text-muted transition hover:text-bone"
                         >
                           {c.cancel}
                         </button>
@@ -274,7 +242,7 @@ export default function Courses() {
                           setEnrolling(ci);
                           setEnrolled(null);
                         }}
-                        className="magnetic sweep on-light inline-flex items-center justify-center gap-2 rounded-full bg-bone px-6 py-3.5 text-[15px] font-medium text-ink transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:bg-ink-2 disabled:text-muted/40"
+                        className="magnetic sweep on-light inline-flex items-center justify-center gap-2 bg-bone px-6 py-3.5 text-[15px] font-medium text-ink transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:bg-ink-2 disabled:text-muted/40"
                       >
                         {mounted && !open ? c.soldOut : c.enroll}
                         <Icon name="arrow" className="size-4" />

@@ -1,13 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  CONTENT,
-  GALLERY_PHOTOS,
-  MASTER_META,
-  priceLabel,
-  rangeLabel,
-} from "../lib/content.ts";
-import { COURSES, DIRECTIONS, PRICE_INDEX } from "../lib/pricing.ts";
+import { CONTENT, priceLabel, rangeLabel } from "../lib/content.ts";
+import { MASTERS, MASTER_COPY } from "../lib/masters.ts";
+import { COURSES, DIRECTIONS, PRICE_INDEX, priceItem } from "../lib/pricing.ts";
 
 /** Walks both dictionaries together so a missing translation fails the build. */
 function compare(a: unknown, b: unknown, path: string, out: string[]) {
@@ -70,27 +65,60 @@ test("every course has copy in both languages", () => {
   }
 });
 
-test("every master has a photo, and every course has exactly one teacher", () => {
-  assert.equal(CONTENT.bg.team.members.length, MASTER_META.length);
-  assert.equal(CONTENT.en.team.members.length, MASTER_META.length);
+test("every master is described in both languages, and every course has one teacher", () => {
+  for (const lang of ["bg", "en"] as const) {
+    assert.equal(MASTER_COPY[lang].length, MASTERS.length);
+    MASTER_COPY[lang].forEach((c, i) => {
+      assert.ok(c.name.trim(), `${lang}: master ${i} has no name`);
+      assert.ok(c.intro.trim(), `${lang}: ${c.name} says nothing about their work`);
+      assert.equal(
+        c.works.length,
+        MASTERS[i].works.length,
+        `${lang}: ${c.name} has ${MASTERS[i].works.length} pictures and ${c.works.length} captions`
+      );
+      assert.ok(c.reviews.length > 0, `${lang}: nobody has said anything about ${c.name}`);
+    });
+  }
   COURSES.forEach((_, ci) => {
-    const teachers = MASTER_META.filter((m) => m.course === ci);
+    const teachers = MASTERS.filter((m) => m.course === ci);
     assert.equal(teachers.length, 1, `course ${ci} has ${teachers.length} teachers`);
   });
 });
 
-test("every master works at least one direction that actually exists", () => {
-  const slugs = new Set(DIRECTIONS.map((d) => d.slug));
-  for (const [i, m] of MASTER_META.entries()) {
-    assert.ok(m.directions.length > 0, `master ${i} works nothing`);
-    for (const slug of m.directions) assert.ok(slugs.has(slug), `master ${i}: unknown "${slug}"`);
+test("master slugs are unique, because they are addresses", () => {
+  const slugs = MASTERS.map((m) => m.slug);
+  assert.equal(new Set(slugs).size, slugs.length, "two masters share a slug");
+  for (const s of slugs) assert.match(s, /^[a-z]+$/, `"${s}" is not usable in a URL`);
+});
+
+test("every service a master offers exists in the price list", () => {
+  for (const m of MASTERS) {
+    assert.ok(m.services.length > 0, `${m.slug} offers nothing`);
+    for (const key of m.services) {
+      assert.ok(priceItem(key), `${m.slug} offers "${key}", which has no price`);
+    }
   }
 });
 
-test("every direction has somebody who can actually do it", () => {
-  for (const d of DIRECTIONS) {
-    const crew = MASTER_META.filter((m) => (m.directions as readonly string[]).includes(d.slug));
-    assert.ok(crew.length > 0, `nobody works ${d.slug}`);
+test("every price line is offered by somebody", () => {
+  const offered = new Set(MASTERS.flatMap((m) => m.services));
+  for (const p of PRICE_INDEX) {
+    assert.ok(offered.has(p.key), `"${p.key}" has a price but nobody does it`);
+  }
+});
+
+test("nobody is offered for work they say they do not do", () => {
+  // Irina's own page says she does not cut. The guard is structural: a master
+  // whose services span a direction must be the only kind of claim they make.
+  const irina = MASTERS.find((m) => m.slug === "irina");
+  assert.ok(irina);
+  for (const key of irina.services) {
+    assert.ok(key.startsWith("tsvyat/"), `Irina is offered "${key}" but she only does colour`);
+  }
+  const daniel = MASTERS.find((m) => m.slug === "daniel");
+  assert.ok(daniel);
+  for (const key of daniel.services) {
+    assert.ok(key.startsWith("kosa/"), `Daniel is offered "${key}" but he is a barber`);
   }
 });
 
@@ -104,10 +132,10 @@ test("price keys are unique, and a range never runs backwards", () => {
   }
 });
 
-test("there are six gallery captions and six gallery photographs", () => {
-  assert.equal(GALLERY_PHOTOS.length, 6);
-  assert.equal(CONTENT.bg.gallery.items.length, GALLERY_PHOTOS.length);
-  assert.equal(CONTENT.en.gallery.items.length, GALLERY_PHOTOS.length);
+test("every picture a master shows has a caption and a distinct file", () => {
+  const files = MASTERS.flatMap((m) => [m.photo, ...m.works]);
+  assert.equal(new Set(files).size, files.length, "two slots point at the same photograph");
+  for (const f of files) assert.match(f, /^\/images\/[a-z0-9-]+\.jpg$/, `odd path: ${f}`);
 });
 
 test("prices convert at the fixed euro rate", () => {

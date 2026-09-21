@@ -38,7 +38,7 @@ export default function Contact() {
                 href={`tel:${SALON.phoneHref}`}
                 className="flex items-center gap-5 border border-line bg-ink p-5 transition hover:border-accent"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                <span className="grid size-10 shrink-0 place-items-center border border-line text-accent">
                   <Icon name="phone" className="size-4" />
                 </span>
                 <span>
@@ -52,7 +52,7 @@ export default function Contact() {
                 href={`mailto:${SALON.email}`}
                 className="flex items-center gap-5 border border-line bg-ink p-5 transition hover:border-accent"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                <span className="grid size-10 shrink-0 place-items-center border border-line text-accent">
                   <Icon name="mail" className="size-4" />
                 </span>
                 <span className="min-w-0">
@@ -65,7 +65,7 @@ export default function Contact() {
                 </span>
               </a>
               <div className="flex items-center gap-5 border border-line bg-ink p-5 sm:col-span-2 lg:col-span-1">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-accent">
+                <span className="grid size-10 shrink-0 place-items-center border border-line text-accent">
                   <Icon name="pin" className="size-4" />
                 </span>
                 <span>
