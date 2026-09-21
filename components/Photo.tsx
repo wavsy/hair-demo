@@ -15,6 +15,7 @@ export default function Photo({
   alt,
   sizes,
   priority = false,
+  loading,
   className = "",
   label,
 }: {
@@ -22,6 +23,7 @@ export default function Photo({
   alt: string;
   sizes: string;
   priority?: boolean;
+  loading?: "lazy" | "eager";
   className?: string;
   label?: string;
 }) {
@@ -57,6 +59,7 @@ export default function Photo({
       fill
       sizes={sizes}
       priority={priority}
+      loading={loading}
       onError={() => setFailed(true)}
       className={className}
     />

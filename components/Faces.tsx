@@ -38,7 +38,11 @@ export default function Faces() {
                 alt={c.name}
                 label={c.name}
                 sizes="(max-width: 768px) 100vw, 40vw"
-                priority={i < 3}
+                // Only the first is urgent. On a phone the five stack, so the
+                // rest are below the fold, and racing them against the one the
+                // visitor can actually see costs about a second on 3G.
+                priority={i === 0}
+                loading={i === 0 ? undefined : "lazy"}
                 className="object-cover grayscale transition-all duration-[1200ms] group-hover:scale-[1.04] group-hover:grayscale-0 group-focus-visible:grayscale-0"
               />
             </span>
